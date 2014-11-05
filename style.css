@@ -1,0 +1,28 @@
+#space {
+  background-color: black;
+  border: 1px solid black;
+}
+/*#container {
+  background-color: black;
+  width: 800px;
+  height: 600px;
+  margin:0 auto;
+}*/
+
+.enemy {
+  width: 50px;
+  height: 50px;
+  background-image: url('spaceinvader.gif');
+  background-size: contain;
+  position: absolute;
+
+}
+
+#ship {
+  width: 50px;
+  height: 50px;
+  background-image: url('ship.jpg');
+  background-size: contain;
+  position: absolute;
+
+}
