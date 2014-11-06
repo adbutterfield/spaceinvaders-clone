@@ -91,6 +91,18 @@ Enemy.prototype.nextFrame = function () {
   };
 }
 
+function getEnemyMinAndMAx (enemies) {
+  var minXEnemy = enemies[enemies.length - 1];
+  var maxXEnemy = enemies[enemies.length - 1];
+  var temp;
+  for (var i = enemies.length - 1; i >= 0; i--){
+    temp = enemies[i];
+    if (temp.x < minXEnemy.x) minXEnemy = temp;
+    if (temp.x > maxXEnemy.x) maxXEnemy = temp;
+  }
+  return { minXEnemy: minXEnemy, maxXEnemy: maxXEnemy }
+}
+
 function reverseEnemies (enemies) {
   for (var i in enemies) {
     enemies[i].y += 20;
@@ -100,9 +112,9 @@ function reverseEnemies (enemies) {
 }
 
 function moveEnemies () {
-  var lastEnemy = enemies[Object.keys(enemies).length];
-  if (lastEnemy && lastEnemy.direction == 'right') {
-    if (lastEnemy.x < (canvas.width - 100)) {
+  var minMax = getEnemyMinAndMAx(enemies)
+  if (minMax.maxXEnemy && minMax.maxXEnemy.direction == 'right') {
+    if (minMax.maxXEnemy.x < (canvas.width - 100)) {
       for (var i in enemies) {
         enemies[i].x += (1 * enemies[i].speed);
       }
@@ -110,8 +122,7 @@ function moveEnemies () {
       reverseEnemies(enemies);
     }
   } else {
-    var firstEnemy = enemies[Object.keys(enemies)[0]]
-    if (firstEnemy && firstEnemy.x > 50) {
+    if (minMax.minXEnemy && minMax.minXEnemy.x > 50) {
       for (var i in enemies) {
         enemies[i].x -= (1 * enemies[i].speed);
       }
@@ -156,15 +167,23 @@ shipImage.onload = function () {
   shipReady = true;
 };
 shipImage.src = "images/ship.png";
-
-var enemies = [];
-for (var i = 1; i < 11; i++) {
-  enemies[i] = new Enemy((i * 50) + 20, 50);
-  enemies[i].sprites.push(new Image());
-  enemies[i].sprites.push(new Image());
-  enemies[i].sprites[0].src = "images/invader2a.png";
-  enemies[i].sprites[1].src = "images/invader2b.png";
+function createEnemies () {
+  var enemies = [];
+  var c = 0;
+  for (var i = 1; i < 3; i++) {
+    for (var j = 1; j < 11; j++) {
+      enemies[c] = new Enemy((j * 50) + 20, (i * 50) + 20);
+      enemies[c].sprites.push(new Image());
+      enemies[c].sprites.push(new Image());
+      enemies[c].sprites[0].src = "images/invader2a.png";
+      enemies[c].sprites[1].src = "images/invader2b.png";
+      c++
+    }
+  }
+  return enemies;
 }
+
+var enemies = createEnemies();
 
 var invader1 = []
 var enemyReady = false;
