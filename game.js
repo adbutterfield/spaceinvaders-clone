@@ -68,8 +68,8 @@ var Enemy = function (x, y) {
 }
 
 function moveEnemies () {
-  var lastEnemy = enemies[Object.keys(enemies).length]
-  if (lastEnemy.direction == 'right') {
+  var lastEnemy = enemies[Object.keys(enemies).length];
+  if (lastEnemy && lastEnemy.direction == 'right') {
     if (lastEnemy.x < (canvas.width - 100)) {
       for (var i in enemies) {
         enemies[i].x += 1;
@@ -82,7 +82,7 @@ function moveEnemies () {
     }
   } else {
     var firstEnemy = enemies[Object.keys(enemies)[0]]
-    if (firstEnemy.x > 50) {
+    if (firstEnemy && firstEnemy.x > 50) {
       for (var i in enemies) {
         enemies[i].x -= 1;
       }
@@ -108,10 +108,14 @@ function checkForCollisions (lazers, enemies) {
   for (var i in lazers) {
     for (var j in enemies) {
       if (lazers[i].detectCollision(enemies[j])) {
-        var remainingLazers = lazers.slice(i);
-        lazers.splice(i + 1, 1);
+        var remainingLazers = lazers.slice(i + 1);
+        lazers.splice(i, 1);
         enemies.splice(j, 1);
-        checkForCollisions(remainingLazers, enemies);
+        if (remainingLazers.length > 0) {
+          checkForCollisions(remainingLazers, enemies);
+        } else {
+          return false;
+        }
       }
     }
   }
@@ -160,7 +164,9 @@ function drawSprites () {
 
 function update () {
   moveShip(ship);
-  checkForCollisions(ship.lazers, enemies);
+  if (ship.lazers.length > 0) {
+    checkForCollisions(ship.lazers, enemies);
+  }
   moveEnemies();
   moveLazers(ship);
 }
