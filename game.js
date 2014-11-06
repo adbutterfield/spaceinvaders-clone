@@ -14,6 +14,7 @@ var Ship = function () {
 }
 
 Ship.prototype.fireLazer = function () {
+  lazerSound.play();
   this.lazers[Object.keys(this.lazers).length] = new Lazer(this.x + this.width/2 - 6);
 };
 
@@ -48,6 +49,7 @@ Lazer.prototype.detectCollision = function (object) {
   // object left corner
   var objLtCr = object.x
   if (this.y == objBtm && (this.x - this.width) >= objLtCr && this.x <= objRtCr ) {
+    enemyDeathSound.play();
     return true;
   } else {
     return false;
@@ -129,6 +131,8 @@ function checkForCollisions (lazers, enemies) {
   }
 }
 
+var lazerSound = new Audio('sounds/shoot.wav');
+var enemyDeathSound = new Audio('sounds/invaderkilled.wav');
 var ship = new Ship;
 var shipReady = false;
 var shipImage = new Image();
