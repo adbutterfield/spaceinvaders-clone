@@ -11,14 +11,15 @@ var Ship = function () {
   this.width = 50;
   this.height = 40;
   this.lazers = [];
-  this.fireLazer = function (){
-    this.lazers[Object.keys(this.lazers).length] = new Lazer(this.x + this.width/2 - 6);
-  };
 }
+
+Ship.prototype.fireLazer = function () {
+  this.lazers[Object.keys(this.lazers).length] = new Lazer(this.x + this.width/2 - 6);
+};
 
 function moveShip (ship) {
   document.onkeydown = keydown;
-  function keydown(e) {
+  function keydown (e) {
     if (e.keyCode == 37 && ship.x >= 50) {
       ship.x -= 10;
     }
@@ -36,7 +37,9 @@ var Lazer = function (x) {
   this.y = 480;
   this.width = 10;
   this.height = 20;
-  this.detectCollision = function (object) {
+}
+
+Lazer.prototype.detectCollision = function (object) {
     // object bottom
     var objBtm = object.y + object.height
     // object right corner
@@ -49,7 +52,6 @@ var Lazer = function (x) {
       return false;
     }
   }
-}
 
 var Enemy = function (x, y) {
   this.x = x;
@@ -58,17 +60,18 @@ var Enemy = function (x, y) {
   this.height = 35;
   this.speed = 1;
   this.direction = 'right';
-  this.reverseDirection = function () {
-    if (this.direction == 'right') {
-      this.direction = 'left';
-    } else {
-      this.direction = 'right';
-    }
-    return true;
-  };
 }
 
-function reverseEnemies(enemies) {
+Enemy.prototype.reverseDirection = function () {
+  if (this.direction == 'right') {
+    this.direction = 'left';
+  } else {
+    this.direction = 'right';
+  }
+  return true;
+};
+
+function reverseEnemies (enemies) {
   for (var i in enemies) {
     enemies[i].y += 20;
     enemies[i].reverseDirection();
@@ -76,7 +79,7 @@ function reverseEnemies(enemies) {
   }
 }
 
-function moveEnemies() {
+function moveEnemies () {
   var lastEnemy = enemies[Object.keys(enemies).length];
   if (lastEnemy && lastEnemy.direction == 'right') {
     if (lastEnemy.x < (canvas.width - 100)) {
