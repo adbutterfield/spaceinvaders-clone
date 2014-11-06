@@ -117,8 +117,6 @@ function checkForCollisions (lazers, enemies) {
     for (var j in enemies) {
       if (lazers[i].detectCollision(enemies[j])) {
         var remainingLazers = lazers.slice(i + 1);
-        // lazers.splice(i, 1);
-        // enemies.splice(j, 1);
         lazers[i].remove = true;
         enemies[j].remove = true;
         if (remainingLazers.length > 0) {
