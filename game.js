@@ -10,7 +10,7 @@ var Ship = function () {
   this.y = 500;
   this.width = 50;
   this.height = 40;
-  this.lazers = {};
+  this.lazers = [];
   this.fireLazer = function (){
     this.lazers[Object.keys(this.lazers).length] = new Lazer(this.x + this.width/2 - 6);
   };
@@ -34,13 +34,28 @@ function moveShip (ship) {
 var Lazer = function (x) {
   this.x = x;
   this.y = 480;
+  this.width = 10;
+  this.height = 20;
+  this.detectCollision = function (object) {
+    // object bottom
+    var objBtm = object.y + object.height
+    // object right corner
+    var objRtCr = object.x + object.width
+    // object left corner
+    var objLtCr = object.x
+    if (this.y == objBtm && (this.x - this.width) >= objLtCr && this.x <= objRtCr ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }
 
 var Enemy = function (x, y) {
   this.x = x;
   this.y = y;
   this.width = 50;
-  this.height = 50;
+  this.height = 35;
   this.direction = 'right';
   this.reverseDirection = function () {
     if (this.direction == 'right') {
@@ -89,6 +104,19 @@ function moveLazers (ship) {
   }
 }
 
+function checkForCollisions (lazers, enemies) {
+  for (var i in lazers) {
+    for (var j in enemies) {
+      if (lazers[i].detectCollision(enemies[j])) {
+        var remainingLazers = lazers.slice(i);
+        lazers.splice(i + 1, 1);
+        enemies.splice(j, 1);
+        checkForCollisions(remainingLazers, enemies);
+      }
+    }
+  }
+}
+
 var ship = new Ship;
 var shipReady = false;
 var shipImage = new Image();
@@ -97,7 +125,7 @@ shipImage.onload = function () {
 };
 shipImage.src = "images/ship.png";
 
-var enemies = {};
+var enemies = [];
 for (var i = 1; i < 11; i++) {
   enemies[i] = new Enemy((i * 50) + 20, 50);
 }
@@ -126,13 +154,13 @@ function drawSprites () {
     }
   }
   for (var i in ship.lazers) {
-    console.log(ship.lazers[i])
     ctx.drawImage(lazerImage, ship.lazers[i].x, ship.lazers[i].y, 10, 20)
   }
 }
 
 function update () {
   moveShip(ship);
+  checkForCollisions(ship.lazers, enemies);
   moveEnemies();
   moveLazers(ship);
 }
