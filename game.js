@@ -37,21 +37,22 @@ var Lazer = function (x) {
   this.y = 480;
   this.width = 10;
   this.height = 20;
+  this.remove = false;
 }
 
 Lazer.prototype.detectCollision = function (object) {
-    // object bottom
-    var objBtm = object.y + object.height
-    // object right corner
-    var objRtCr = object.x + object.width
-    // object left corner
-    var objLtCr = object.x
-    if (this.y == objBtm && (this.x - this.width) >= objLtCr && this.x <= objRtCr ) {
-      return true;
-    } else {
-      return false;
-    }
+  // object bottom
+  var objBtm = object.y + object.height
+  // object right corner
+  var objRtCr = object.x + object.width
+  // object left corner
+  var objLtCr = object.x
+  if (this.y == objBtm && (this.x - this.width) >= objLtCr && this.x <= objRtCr ) {
+    return true;
+  } else {
+    return false;
   }
+}
 
 var Enemy = function (x, y) {
   this.x = x;
@@ -60,6 +61,7 @@ var Enemy = function (x, y) {
   this.height = 35;
   this.speed = 1;
   this.direction = 'right';
+  this.remove = false;
 }
 
 Enemy.prototype.reverseDirection = function () {
@@ -115,8 +117,10 @@ function checkForCollisions (lazers, enemies) {
     for (var j in enemies) {
       if (lazers[i].detectCollision(enemies[j])) {
         var remainingLazers = lazers.slice(i + 1);
-        lazers.splice(i, 1);
-        enemies.splice(j, 1);
+        // lazers.splice(i, 1);
+        // enemies.splice(j, 1);
+        lazers[i].remove = true;
+        enemies[j].remove = true;
         if (remainingLazers.length > 0) {
           checkForCollisions(remainingLazers, enemies);
         } else {
@@ -146,6 +150,13 @@ enemyImage.onload = function () {
 }
 enemyImage.src = "images/spaceinvader.png"
 
+var enemyDeathReady = false;
+var enemyDeathImage = new Image();
+enemyDeathImage.onload = function () {
+  enemyDeathReady = true;
+}
+enemyDeathImage.src = "images/invaderExplode.png";
+
 var lazerReady = false;
 var lazerImage = new Image();
 lazerImage.onload = function () {
@@ -160,11 +171,20 @@ function drawSprites () {
   }
   if (enemyReady) {
     for (var i in enemies) {
-      ctx.drawImage(enemyImage, enemies[i].x, enemies[i].y, 50, 35)
+      if (enemies[i].remove) {
+        ctx.drawImage(enemyDeathImage, enemies[i].x, enemies[i].y, 50, 35)
+        enemies.splice(i, 1);
+      } else {
+        ctx.drawImage(enemyImage, enemies[i].x, enemies[i].y, 50, 35)
+      };
     }
   }
   for (var i in ship.lazers) {
-    ctx.drawImage(lazerImage, ship.lazers[i].x, ship.lazers[i].y, 10, 20)
+    if (ship.lazers[i].remove) {
+        ship.lazers.splice(i, 1);
+    } else {
+      ctx.drawImage(lazerImage, ship.lazers[i].x, ship.lazers[i].y, 10, 20)
+    };
   }
 }
 
