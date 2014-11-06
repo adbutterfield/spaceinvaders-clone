@@ -64,6 +64,9 @@ var Enemy = function (x, y) {
   this.speed = 1;
   this.direction = 'right';
   this.remove = false;
+  this.sprites = [];
+  this.frame = 1;
+  this.frameCounter = 0;
 }
 
 Enemy.prototype.reverseDirection = function () {
@@ -74,6 +77,19 @@ Enemy.prototype.reverseDirection = function () {
   }
   return true;
 };
+
+Enemy.prototype.nextFrame = function () {
+  if (this.frameCounter == 50) {
+    this.frameCounter = 0;
+    if (this.frame == 1) {
+      this.frame = 0;
+    } else {
+      this.frame = 1;
+    }
+  } else {
+    this.frameCounter += 1;
+  };
+}
 
 function reverseEnemies (enemies) {
   for (var i in enemies) {
@@ -144,7 +160,13 @@ shipImage.src = "images/ship.png";
 var enemies = [];
 for (var i = 1; i < 11; i++) {
   enemies[i] = new Enemy((i * 50) + 20, 50);
+  enemies[i].sprites.push(new Image());
+  enemies[i].sprites.push(new Image());
+  enemies[i].sprites[0].src = "images/invader2a.png";
+  enemies[i].sprites[1].src = "images/invader2b.png";
 }
+
+var invader1 = []
 var enemyReady = false;
 var enemyImage = new Image();
 enemyImage.onload = function () {
@@ -177,7 +199,8 @@ function drawSprites () {
         ctx.drawImage(enemyDeathImage, enemies[i].x, enemies[i].y, 50, 35)
         enemies.splice(i, 1);
       } else {
-        ctx.drawImage(enemyImage, enemies[i].x, enemies[i].y, 50, 35)
+        ctx.drawImage(enemies[i].sprites[enemies[i].frame], enemies[i].x, enemies[i].y, 50, 35)
+        enemies[i].nextFrame();
       };
     }
   }
