@@ -56,6 +56,7 @@ var Enemy = function (x, y) {
   this.y = y;
   this.width = 50;
   this.height = 35;
+  this.speed = 1;
   this.direction = 'right';
   this.reverseDirection = function () {
     if (this.direction == 'right') {
@@ -67,30 +68,32 @@ var Enemy = function (x, y) {
   };
 }
 
-function moveEnemies () {
+function reverseEnemies(enemies) {
+  for (var i in enemies) {
+    enemies[i].y += 20;
+    enemies[i].reverseDirection();
+    enemies[i].speed += 0.15;
+  }
+}
+
+function moveEnemies() {
   var lastEnemy = enemies[Object.keys(enemies).length];
   if (lastEnemy && lastEnemy.direction == 'right') {
     if (lastEnemy.x < (canvas.width - 100)) {
       for (var i in enemies) {
-        enemies[i].x += 1;
+        enemies[i].x += (1 * enemies[i].speed);
       }
     } else {
-      for (var i in enemies) {
-        enemies[i].y += 20;
-        enemies[i].reverseDirection();
-      }
+      reverseEnemies(enemies);
     }
   } else {
     var firstEnemy = enemies[Object.keys(enemies)[0]]
     if (firstEnemy && firstEnemy.x > 50) {
       for (var i in enemies) {
-        enemies[i].x -= 1;
+        enemies[i].x -= (1 * enemies[i].speed);
       }
     } else {
-      for (var i in enemies) {
-        enemies[i].y += 20;
-        enemies[i].reverseDirection();
-      }
+      reverseEnemies(enemies);
     }
   }
 }
