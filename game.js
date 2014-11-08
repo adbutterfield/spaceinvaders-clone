@@ -4,7 +4,7 @@
 // constructor //
 var Ship = function () {
   this.x = 400;
-  this.y = 500;
+  this.y = 530;
   this.width = 50;
   this.height = 40;
   this.lazers = [];
@@ -87,7 +87,7 @@ function checkForCollisions (lazers, enemies) {
 
 /* Enemy */
 // constructor //
-var Enemy = function (x, y) {
+var Enemy = function (x, y, sprites) {
   this.x = x;
   this.y = y;
   this.width = 50;
@@ -95,7 +95,7 @@ var Enemy = function (x, y) {
   this.speed = 1;
   this.direction = 'right';
   this.remove = false;
-  this.sprites = [];
+  this.sprites = sprites;
   this.frame = 1;
   this.frameCounter = 0;
 }
@@ -167,16 +167,21 @@ function moveEnemies (canvas, enemies) {
   }
 }
 
-function createEnemies () {
+function createEnemies (images) {
   var enemies = [];
+  // use another counter to save from using multi-dimensional array
   var c = 0;
-  for (var i = 1; i < 3; i++) {
+  var imageIndex;
+  for (var i = 1; i < 6; i++) {
     for (var j = 1; j < 11; j++) {
-      enemies[c] = new Enemy((j * 50) + 20, (i * 50) + 20);
-      enemies[c].sprites.push(new Image());
-      enemies[c].sprites.push(new Image());
-      enemies[c].sprites[0].src = "images/invader2a.png";
-      enemies[c].sprites[1].src = "images/invader2b.png";
+      if (i == 1) {
+        imageIndex = 0;
+      } else if (i == 2 || i == 3){
+        imageIndex = 1;
+      } else {
+        imageIndex = 2;
+      }
+      enemies[c] = new Enemy((j * 50) + 20, (i * 50), images[imageIndex]);
       c++
     }
   }
@@ -185,8 +190,26 @@ function createEnemies () {
 
 /* Game utilities */
 function imageLoader () {
-  var enemyImage = new Image();
-  enemyImage.src = "images/spaceinvader.png"
+  var enemy1a = new Image();
+  enemy1a.src = "images/invader1a.png";
+
+  var enemy1b = new Image();
+  enemy1b.src = "images/invader1b.png";
+
+  var enemy2a = new Image();
+  enemy2a.src = "images/invader2a.png";
+
+  var enemy2b = new Image();
+  enemy2b.src = "images/invader2b.png";
+
+  var enemy3a = new Image();
+  enemy3a.src = "images/invader3a.png";
+
+  var enemy3b = new Image();
+  enemy3b.src = "images/invader3b.png";
+
+  var ufo = new Image();
+  ufo.src = "images/ufo.png";
 
   var enemyDeathImage = new Image();
   enemyDeathImage.src = "images/invaderExplode.png";
@@ -200,14 +223,24 @@ function imageLoader () {
   return {
     ship: shipImage,
     enemies: {
-      enemy1: [],
-      enemy2: [],
-      enemy3: [],
-      ufo: [],
+      enemy1: [enemy1a, enemy1b],
+      enemy2: [enemy2a, enemy2b],
+      enemy3: [enemy3a, enemy3b],
+      ufo: ufo,
       death: enemyDeathImage
     },
     lazer: lazerImage
   };
+}
+
+function invaderImages (images) {
+  var invaders = [];
+  for (var i in images) {
+    if (images[i].constructor === Array) {
+      invaders.push(images[i])
+    }
+  }
+  return invaders;
 }
 
 function soundLoader () {
@@ -272,15 +305,17 @@ function game () {
   canvas.width = 800;
   canvas.height = 600;
 
-  // Create sprites
-  var ship = new Ship;
-  var enemies = createEnemies();
-
   // Load images
   var images = imageLoader();
-
+  var invaders = invaderImages(images.enemies);
   // Load sounds
   var sfx = soundLoader();
+
+  // Create sprites
+  var ship = new Ship;
+
+  var enemies = createEnemies(invaders);
+
 
   main(ctx, canvas, ship, enemies, images);
 }
