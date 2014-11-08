@@ -1,24 +1,20 @@
 "use strict";
 
-var canvas = document.getElementById("space");
-var ctx = canvas.getContext("2d");
-canvas.width = 800;
-canvas.height = 600;
-
 var Ship = function () {
   this.x = 400;
   this.y = 500;
   this.width = 50;
   this.height = 40;
   this.lazers = [];
+  this.sfx = new Audio('sounds/shoot.wav');
 }
 
 Ship.prototype.fireLazer = function () {
-  lazerSound.play();
+  this.sfx.play();
   this.lazers[Object.keys(this.lazers).length] = new Lazer(this.x + this.width/2 - 6);
 };
 
-function moveShip (ship) {
+function moveShip (canvas, ship) {
   document.onkeydown = keydown;
   function keydown (e) {
     if (e.keyCode == 37 && ship.x >= 50) {
@@ -39,6 +35,7 @@ var Lazer = function (x) {
   this.width = 10;
   this.height = 20;
   this.remove = false;
+  this.sfx = new Audio('sounds/invaderkilled.wav');
 }
 
 Lazer.prototype.detectCollision = function (object) {
@@ -49,7 +46,7 @@ Lazer.prototype.detectCollision = function (object) {
   // object left corner
   var objLtCr = object.x
   if (this.y == objBtm && (this.x - this.width) >= objLtCr && this.x <= objRtCr ) {
-    enemyDeathSound.play();
+    this.sfx.play();
     return true;
   } else {
     return false;
@@ -111,7 +108,7 @@ function reverseEnemies (enemies) {
   }
 }
 
-function moveEnemies () {
+function moveEnemies (canvas, enemies) {
   var minMax = getEnemyMinAndMAx(enemies)
   if (minMax.maxXEnemy && minMax.maxXEnemy.direction == 'right') {
     if (minMax.maxXEnemy.x < (canvas.width - 100)) {
@@ -158,15 +155,6 @@ function checkForCollisions (lazers, enemies) {
   }
 }
 
-var lazerSound = new Audio('sounds/shoot.wav');
-var enemyDeathSound = new Audio('sounds/invaderkilled.wav');
-var ship = new Ship;
-var shipReady = false;
-var shipImage = new Image();
-shipImage.onload = function () {
-  shipReady = true;
-};
-shipImage.src = "images/ship.png";
 function createEnemies () {
   var enemies = [];
   var c = 0;
@@ -183,72 +171,122 @@ function createEnemies () {
   return enemies;
 }
 
-var enemies = createEnemies();
-
-var invader1 = []
-var enemyReady = false;
-var enemyImage = new Image();
-enemyImage.onload = function () {
-  enemyReady = true;
-}
-enemyImage.src = "images/spaceinvader.png"
-
-var enemyDeathReady = false;
-var enemyDeathImage = new Image();
-enemyDeathImage.onload = function () {
-  enemyDeathReady = true;
-}
-enemyDeathImage.src = "images/invaderExplode.png";
-
-var lazerReady = false;
-var lazerImage = new Image();
-lazerImage.onload = function () {
-  lazerReady = true;
-}
-lazerImage.src = "images/lazer.png";
-
-function drawSprites () {
+function drawSprites (ctx, canvas, ship, enemies, images) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  if (shipReady) {
-    ctx.drawImage(shipImage, ship.x, ship.y, ship.width, ship.height)
-  }
-  if (enemyReady) {
+  // if (shipReady) {
+    ctx.drawImage(images.ship, ship.x, ship.y, ship.width, ship.height)
+  // }
+  // if (enemyReady) {
     for (var i in enemies) {
       if (enemies[i].remove) {
-        ctx.drawImage(enemyDeathImage, enemies[i].x, enemies[i].y, 50, 35)
+        ctx.drawImage(images.enemies.death, enemies[i].x, enemies[i].y, 50, 35)
         enemies.splice(i, 1);
       } else {
         ctx.drawImage(enemies[i].sprites[enemies[i].frame], enemies[i].x, enemies[i].y, 50, 35)
         enemies[i].nextFrame();
       };
     }
-  }
+  // }
   for (var i in ship.lazers) {
     if (ship.lazers[i].remove) {
         ship.lazers.splice(i, 1);
     } else {
-      ctx.drawImage(lazerImage, ship.lazers[i].x, ship.lazers[i].y, 10, 20)
+      ctx.drawImage(images.lazer, ship.lazers[i].x, ship.lazers[i].y, 10, 20)
     };
   }
 }
 
-function update () {
-  moveShip(ship);
+function imageLoader () {
+  // Load images
+  var enemyReady = false;
+  var enemyImage = new Image();
+  enemyImage.onload = function () {
+    enemyReady = true;
+  }
+  enemyImage.src = "images/spaceinvader.png"
+
+  var enemyDeathReady = false;
+  var enemyDeathImage = new Image();
+  enemyDeathImage.onload = function () {
+    enemyDeathReady = true;
+  }
+  enemyDeathImage.src = "images/invaderExplode.png";
+
+  var lazerReady = false;
+  var lazerImage = new Image();
+  lazerImage.onload = function () {
+    lazerReady = true;
+  }
+  lazerImage.src = "images/lazer.png";
+
+  var shipReady = false;
+  var shipImage = new Image();
+  shipImage.onload = function () {
+    shipReady = true;
+  };
+  shipImage.src = "images/ship.png";
+
+  return {
+    ship: shipImage,
+    enemies: {
+      enemy1: [],
+      enemy2: [],
+      enemy3: [],
+      ufo: [],
+      death: enemyDeathImage
+    },
+    lazer: lazerImage
+  };
+}
+
+function soundLoader () {
+  var lazerSound = new Audio('sounds/shoot.wav');
+  var enemyDeathSound = new Audio('sounds/invaderkilled.wav');
+  return {
+    lazer: lazerSound,
+    enemyDeath: enemyDeathSound
+  };
+}
+
+function game () {
+  // Create canvas
+  var canvas = document.getElementById("space");
+  var ctx = canvas.getContext("2d");
+  canvas.width = 800;
+  canvas.height = 600;
+
+  // Create sprites
+  var ship = new Ship;
+  var enemies = createEnemies();
+
+  // Load images
+  var images = imageLoader();
+
+  // Load sounds
+  var sfx = soundLoader();
+
+  main(ctx, canvas, ship, enemies, images);
+}
+
+function update (canvas, ship, enemies) {
+  moveShip(canvas, ship);
   if (ship.lazers.length > 0) {
     checkForCollisions(ship.lazers, enemies);
   }
-  moveEnemies();
+  moveEnemies(canvas, enemies);
   moveLazers(ship);
 }
 
 // The main game loop
-var main = function () {
-  update();
+function main (ctx, canvas, ship, enemies, images) {
+  update(canvas, ship, enemies);
 
-  drawSprites();
+  drawSprites(ctx, canvas, ship, enemies, images);
 
   // Request to do this again ASAP
-  requestAnimationFrame(main);
+  requestAnimationFrame(function(){
+    main(ctx, canvas, ship, enemies, images);
+  });
 };
 
 // Cross-browser support for requestAnimationFrame
@@ -256,4 +294,5 @@ var w = window;
 var requestAnimationFrame = w.requestAnimationFrame || w.webkitRequestAnimationFrame || w.msRequestAnimationFrame || w.mozRequestAnimationFrame;
 
 // Let's play this game!
-main();
+
+game();
