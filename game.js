@@ -111,16 +111,11 @@ Enemy.prototype.reverseDirection = function () {
 
 // sets next frame of sprite animation //
 Enemy.prototype.nextFrame = function () {
-  if (this.frameCounter == 50) {
-    this.frameCounter = 0;
-    if (this.frame == 1) {
-      this.frame = 0;
-    } else {
-      this.frame = 1;
-    }
+  if (this.frame == 1) {
+    this.frame = 0;
   } else {
-    this.frameCounter += 1;
-  };
+    this.frame = 1;
+  }
 }
 
 // gets the furthest right, and left enemies on the board //
@@ -141,7 +136,7 @@ function reverseEnemies (enemies) {
   for (var i in enemies) {
     enemies[i].y += 20;
     enemies[i].reverseDirection();
-    enemies[i].speed += 0.15;
+    enemies[i].nextFrame();
   }
 }
 
@@ -151,7 +146,8 @@ function moveEnemies (canvas, enemies) {
   if (minMax.maxXEnemy && minMax.maxXEnemy.direction == 'right') {
     if (minMax.maxXEnemy.x < (canvas.width - 100)) {
       for (var i in enemies) {
-        enemies[i].x += (1 * enemies[i].speed);
+        enemies[i].x += (15 * enemies[i].speed);
+        enemies[i].nextFrame();
       }
     } else {
       reverseEnemies(enemies);
@@ -159,7 +155,8 @@ function moveEnemies (canvas, enemies) {
   } else {
     if (minMax.minXEnemy && minMax.minXEnemy.x > 50) {
       for (var i in enemies) {
-        enemies[i].x -= (1 * enemies[i].speed);
+        enemies[i].x -= (15 * enemies[i].speed);
+        enemies[i].nextFrame();
       }
     } else {
       reverseEnemies(enemies);
@@ -257,7 +254,6 @@ function updateSprites (canvas, ship, enemies) {
   if (ship.lazers.length > 0) {
     checkForCollisions(ship.lazers, enemies);
   }
-  moveEnemies(canvas, enemies);
   moveLazers(ship);
 }
 
@@ -273,7 +269,7 @@ function drawSprites (ctx, canvas, ship, enemies, images) {
       enemies.splice(i, 1);
     } else {
       ctx.drawImage(enemies[i].sprites[enemies[i].frame], enemies[i].x, enemies[i].y, 50, 35)
-      enemies[i].nextFrame();
+      // enemies[i].nextFrame();
     };
   }
   // draw lazers
@@ -291,7 +287,6 @@ function main (ctx, canvas, ship, enemies, images) {
   // Update the position of sprites
   updateSprites(canvas, ship, enemies);
   drawSprites(ctx, canvas, ship, enemies, images);
-
   // Run main again on next animation frame
   requestAnimationFrame(function(){
     main(ctx, canvas, ship, enemies, images);
@@ -313,6 +308,9 @@ function game () {
   // Create sprites
   var ship = new Ship;
   var enemies = createEnemies(invaders);
+  setInterval(function(){
+    moveEnemies(canvas, enemies);
+  }, 1000);
   // Kick off main game loop
   main(ctx, canvas, ship, enemies, images);
 }
