@@ -288,35 +288,32 @@ function drawSprites (ctx, canvas, ship, enemies, images) {
 
 // The main game loop
 function main (ctx, canvas, ship, enemies, images) {
+  // Update the position of sprites
   updateSprites(canvas, ship, enemies);
-
   drawSprites(ctx, canvas, ship, enemies, images);
 
-  // Run main on next animation frame
+  // Run main again on next animation frame
   requestAnimationFrame(function(){
     main(ctx, canvas, ship, enemies, images);
   });
 };
 
+// Put it all together
 function game () {
   // Create canvas
   var canvas = document.getElementById("space");
   var ctx = canvas.getContext("2d");
   canvas.width = 800;
   canvas.height = 600;
-
   // Load images
   var images = imageLoader();
   var invaders = invaderImages(images.enemies);
   // Load sounds
   var sfx = soundLoader();
-
   // Create sprites
   var ship = new Ship;
-
   var enemies = createEnemies(invaders);
-
-
+  // Kick off main game loop
   main(ctx, canvas, ship, enemies, images);
 }
 
