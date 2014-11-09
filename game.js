@@ -321,5 +321,4 @@ function game () {
 }
 
 // Let's play this game!
-
 game();
