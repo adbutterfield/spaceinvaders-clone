@@ -92,7 +92,6 @@ var Enemy = function (x, y, sprites) {
   this.y = y;
   this.width = 50;
   this.height = 35;
-  this.speed = 1;
   this.direction = 'right';
   this.remove = false;
   this.sprites = sprites;
@@ -150,7 +149,7 @@ function moveEnemies (canvas, enemies) {
           enemies[i].frameCounter++;
         } else {
           enemies[i].frameCounter = 0;
-          enemies[i].x += (15 * enemies[i].speed);
+          enemies[i].x += 15;
           enemies[i].nextFrame();
         }
       }
@@ -164,7 +163,7 @@ function moveEnemies (canvas, enemies) {
           enemies[i].frameCounter++;
         } else {
           enemies[i].frameCounter = 0;
-          enemies[i].x -= (15 * enemies[i].speed);
+          enemies[i].x -= 15;
           enemies[i].nextFrame();
         }
       }
