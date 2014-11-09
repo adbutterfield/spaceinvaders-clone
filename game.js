@@ -35,7 +35,7 @@ function moveShip (canvas, ship) {
 // constructor //
 var Lazer = function (x) {
   this.x = x;
-  this.y = 480;
+  this.y = 525;
   this.width = 10;
   this.height = 20;
   this.remove = false;
@@ -140,14 +140,19 @@ function reverseEnemies (enemies) {
   }
 }
 
-// updates x and y values of enemies
+// updates x and y values of enemies //
 function moveEnemies (canvas, enemies) {
   var minMax = getEnemyMinAndMAx(enemies)
   if (minMax.maxXEnemy && minMax.maxXEnemy.direction == 'right') {
     if (minMax.maxXEnemy.x < (canvas.width - 100)) {
       for (var i in enemies) {
-        enemies[i].x += (15 * enemies[i].speed);
-        enemies[i].nextFrame();
+        if (enemies[i].frameCounter <= enemies.length) {
+          enemies[i].frameCounter++;
+        } else {
+          enemies[i].frameCounter = 0;
+          enemies[i].x += (15 * enemies[i].speed);
+          enemies[i].nextFrame();
+        }
       }
     } else {
       reverseEnemies(enemies);
@@ -155,8 +160,13 @@ function moveEnemies (canvas, enemies) {
   } else {
     if (minMax.minXEnemy && minMax.minXEnemy.x > 50) {
       for (var i in enemies) {
-        enemies[i].x -= (15 * enemies[i].speed);
-        enemies[i].nextFrame();
+        if (enemies[i].frameCounter <= enemies.length) {
+          enemies[i].frameCounter++;
+        } else {
+          enemies[i].frameCounter = 0;
+          enemies[i].x -= (15 * enemies[i].speed);
+          enemies[i].nextFrame();
+        }
       }
     } else {
       reverseEnemies(enemies);
@@ -254,6 +264,7 @@ function updateSprites (canvas, ship, enemies) {
   if (ship.lazers.length > 0) {
     checkForCollisions(ship.lazers, enemies);
   }
+  moveEnemies(canvas, enemies);
   moveLazers(ship);
 }
 
@@ -269,7 +280,6 @@ function drawSprites (ctx, canvas, ship, enemies, images) {
       enemies.splice(i, 1);
     } else {
       ctx.drawImage(enemies[i].sprites[enemies[i].frame], enemies[i].x, enemies[i].y, 50, 35)
-      // enemies[i].nextFrame();
     };
   }
   // draw lazers
@@ -308,9 +318,7 @@ function game () {
   // Create sprites
   var ship = new Ship;
   var enemies = createEnemies(invaders);
-  setInterval(function(){
-    moveEnemies(canvas, enemies);
-  }, 1000);
+
   // Kick off main game loop
   main(ctx, canvas, ship, enemies, images);
 }
