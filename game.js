@@ -135,7 +135,7 @@ function reverseEnemies (enemies) {
   for (var i in enemies) {
     enemies[i].y += 20;
     enemies[i].reverseDirection();
-    enemies[i].nextFrame();
+    // enemies[i].nextFrame();
   }
 }
 
@@ -149,7 +149,7 @@ function moveEnemies (canvas, enemies) {
           enemies[i].frameCounter++;
         } else {
           enemies[i].frameCounter = 0;
-          enemies[i].x += 15;
+          enemies[i].x += 10;
           enemies[i].nextFrame();
         }
       }
@@ -163,7 +163,7 @@ function moveEnemies (canvas, enemies) {
           enemies[i].frameCounter++;
         } else {
           enemies[i].frameCounter = 0;
-          enemies[i].x -= 15;
+          enemies[i].x -= 10;
           enemies[i].nextFrame();
         }
       }
@@ -179,7 +179,7 @@ function createEnemies (images) {
   var c = 0;
   var imageIndex;
   for (var i = 1; i < 6; i++) {
-    for (var j = 1; j < 11; j++) {
+    for (var j = 1; j < 12; j++) {
       if (i == 1) {
         imageIndex = 0;
       } else if (i == 2 || i == 3){
@@ -263,7 +263,9 @@ function updateSprites (canvas, ship, enemies) {
   if (ship.lazers.length > 0) {
     checkForCollisions(ship.lazers, enemies);
   }
-  moveEnemies(canvas, enemies);
+  if (enemies.length > 0) {
+    moveEnemies(canvas, enemies);
+  };
   moveLazers(ship);
 }
 
@@ -291,7 +293,7 @@ function drawSprites (ctx, canvas, ship, enemies, images) {
   }
 }
 
-// The main game loop
+// The main game loop //
 function main (ctx, canvas, ship, enemies, images) {
   // Update the position of sprites
   updateSprites(canvas, ship, enemies);
@@ -302,7 +304,7 @@ function main (ctx, canvas, ship, enemies, images) {
   });
 };
 
-// Put it all together
+// Put it all together //
 function game () {
   // Create canvas
   var canvas = document.getElementById("space");
