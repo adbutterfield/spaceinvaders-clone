@@ -101,6 +101,7 @@ var Enemy = function (id, x, y, sprites) {
   this.frameCounter = 0;
   this.missleDely = Math.floor((Math.random() * 30) + 1);
   this.missles = [];
+  this.sfx = new Audio('sounds/invaderkilled.wav');
 }
 
 Enemy.prototype.reverseDirection = function () {
@@ -122,8 +123,8 @@ Enemy.prototype.nextFrame = function () {
 }
 
 Enemy.prototype.fireMissle = function () {
-  // this.sfx.play();
-  this.missles[this.missles.length] = new Missle(this.x + this.width/2 - 6, this.y + this.height);
+  this.sfx.play();
+  this.missles[this.missles.length] = new Missle(this.x + this.width/2 - 6, this.y + this.height - 5);
 };
 
 // gets the furthest right, and left enemies on the board //
@@ -210,16 +211,25 @@ function getAttackingEnemies (enemies) {
 function attackShip (attackingEnemies) {
   for (var i in attackingEnemies) {
     var rand = Math.floor((Math.random() * 10) + 1) % 5;
-
     if (attackingEnemies[i].missleDely <= 120) {
       attackingEnemies[i].missleDely++;
     } else {
       if (rand === 0) {
         attackingEnemies[i].fireMissle();
-        console.log(attackingEnemies[i].missleDely);
       }
       attackingEnemies[i].missleDely = 0;
     }
+  }
+}
+
+function resetAttackingEnemy (enemies, enemy, attackingEnemies) {
+  var column = enemies.filter(function(element){
+    return element.x === enemy.x;
+  });
+  attackingEnemies.splice(atkEnmyIndex, 1);
+  var nextAttacker = enemies[enemies.indexOf(column[column.length - 2])];
+  if (nextAttacker) {
+    attackingEnemies.push(nextAttacker);
   }
 }
 
@@ -253,7 +263,7 @@ Missle.prototype.detectCollision = function (object) {
 function moveMissles (attackingEnemies) {
   for (var i in attackingEnemies) {
     for (var j in attackingEnemies[i].missles) {
-      attackingEnemies[i].missles[j].y += 5;
+      attackingEnemies[i].missles[j].y += 3;
       if (attackingEnemies[i].missles[j].y < 0) {
         delete attackingEnemies[i].missles[j];
       }
@@ -261,20 +271,13 @@ function moveMissles (attackingEnemies) {
   }
 }
 
-// check for collisions between lazers and enemies //
+// check for collisions between missles and the ship //
 function checkShipMissleCollision (attackingEnemies, ship) {
   for (var i in attackingEnemies) {
     for (var j in attackingEnemies[i].missles) {
       if (attackingEnemies[i].missles[j].detectCollision(ship)) {
         ship.remove = true;
-        // var remainingLazers = lazers.slice(i + 1);
-        // lazers[i].remove = true;
-        // enemies[j].remove = true;
-        // if (remainingLazers.length > 0) {
-        //   checkEnemyLazerCollision(remainingLazers, enemies);
-        // } else {
-        //   return false;
-        // }
+        // TODO, remove life or end game
       }
     }
   }
@@ -377,6 +380,10 @@ function drawSprites (ctx, canvas, ship, enemies, attackingEnemies, images) {
   for (var i in enemies) {
     if (enemies[i].remove) {
       ctx.drawImage(images.enemies.death, enemies[i].x, enemies[i].y, 50, 35);
+      var atkEnmyIndex = attackingEnemies.indexOf(enemies[i]);
+      if (atkEnmyIndex !== -1){
+        resetAttackingEnemy(enemies, enemies[i], attackingEnemies);
+      }
       enemies.splice(i, 1);
     } else {
       ctx.drawImage(enemies[i].sprites[enemies[i].frame], enemies[i].x, enemies[i].y, 50, 35);
@@ -396,7 +403,6 @@ function drawSprites (ctx, canvas, ship, enemies, attackingEnemies, images) {
       ctx.drawImage(images.lazer, attackingEnemies[i].missles[j].x, attackingEnemies[i].missles[j].y, 10, 20);
     }
   }
-
 }
 
 // The main game loop //
@@ -410,7 +416,7 @@ function main (ctx, canvas, ship, enemies, attackingEnemies, images) {
   });
 };
 
-// Put it all together //
+/* The Game */
 function game () {
   // Create canvas
   var canvas = document.getElementById("space");
