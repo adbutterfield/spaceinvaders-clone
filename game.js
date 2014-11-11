@@ -145,7 +145,6 @@ function reverseEnemies (enemies) {
   for (var i in enemies) {
     enemies[i].y += 20;
     enemies[i].reverseDirection();
-    // enemies[i].nextFrame();
   }
 }
 
