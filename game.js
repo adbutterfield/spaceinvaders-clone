@@ -95,8 +95,8 @@ var Enemy = function (id, x, y, sprites) {
   this.sprites = sprites;
   this.frame = 1;
   this.frameCounter = 0;
-  this.missleDely = Math.floor((Math.random() * 30) + 1);
-  this.missles = [];
+  this.missileDely = Math.floor((Math.random() * 30) + 1);
+  this.missiles = [];
   this.sfx = new Audio('sounds/shoot.wav');
 }
 
@@ -120,7 +120,7 @@ Enemy.prototype.nextFrame = function () {
 
 Enemy.prototype.fireMissle = function () {
   this.sfx.play();
-  this.missles[this.missles.length] = new Missle(this.x + this.width/2 - 6, this.y + this.height - 5);
+  this.missiles[this.missiles.length] = new Missle(this.x + this.width/2 - 6, this.y + this.height - 5);
 };
 
 // gets the furthest right, and left enemies on the board //
@@ -206,13 +206,13 @@ function getAttackingEnemies (enemies) {
 function attackShip (attackingEnemies) {
   for (var i in attackingEnemies) {
     var rand = Math.floor((Math.random() * 10) + 1) % 5;
-    if (attackingEnemies[i].missleDely <= 120) {
-      attackingEnemies[i].missleDely++;
+    if (attackingEnemies[i].missileDely <= 120) {
+      attackingEnemies[i].missileDely++;
     } else {
       if (rand === 0) {
         attackingEnemies[i].fireMissle();
       }
-      attackingEnemies[i].missleDely = 0;
+      attackingEnemies[i].missileDely = 0;
     }
   }
 }
@@ -224,10 +224,10 @@ function resetAttackingEnemy (enemies, enemy, attackingEnemies) {
       return element.x === enemy.x;
     });
     var nextAttacker = enemies[enemies.indexOf(column[column.length - 2])];
-    // pass on missles to the next attacker if the enemy is destroyed, or else missles would also be destroyed
-    if (enemy.missles.length > 0) {
-      for (var i in enemy.missles) {
-        nextAttacker.missles.push(enemy.missles[i]);
+    // pass on missiles to the next attacker if the enemy is destroyed, or else missiles would also be destroyed
+    if (enemy.missiles.length > 0) {
+      for (var i in enemy.missiles) {
+        nextAttacker.missiles.push(enemy.missiles[i]);
       }
     }
     attackingEnemies.splice(atkEnmyIndex, 1);
@@ -257,25 +257,25 @@ Missle.prototype.detectCollision = function (object) {
   }
 }
 
-// update y value of missles //
+// update y value of missiles //
 function moveMissles (canvas, attackingEnemies) {
   for (var i in attackingEnemies) {
-    for (var j in attackingEnemies[i].missles) {
-      attackingEnemies[i].missles[j].y += 3;
-      if (attackingEnemies[i].missles[j].y > canvas.height) {
-        delete attackingEnemies[i].missles[j];
+    for (var j in attackingEnemies[i].missiles) {
+      attackingEnemies[i].missiles[j].y += 3;
+      if (attackingEnemies[i].missiles[j].y > canvas.height) {
+        delete attackingEnemies[i].missiles[j];
       }
     }
   }
 }
 
-// check for collisions between missles and the ship //
+// check for collisions between missiles and the ship //
 function checkShipMissleCollision (attackingEnemies, ship) {
   for (var i in attackingEnemies) {
-    for (var j in attackingEnemies[i].missles) {
-      if (attackingEnemies[i].missles[j].y >= ship.y && attackingEnemies[i].missles[j].y > ship.y) {
-        if (attackingEnemies[i].missles[j].detectCollision(ship)) {
-          delete attackingEnemies[i].missles[j];
+    for (var j in attackingEnemies[i].missiles) {
+      if (attackingEnemies[i].missiles[j].y >= ship.y && attackingEnemies[i].missiles[j].y > ship.y) {
+        if (attackingEnemies[i].missiles[j].detectCollision(ship)) {
+          delete attackingEnemies[i].missiles[j];
           ship.remove = true;
           // TODO, remove life or end game
         }
@@ -395,10 +395,10 @@ function drawSprites (ctx, canvas, ship, enemies, attackingEnemies, images) {
       ctx.drawImage(images.lazer, ship.lazers[i].x, ship.lazers[i].y, 10, 20);
     };
   }
-  // draw enemy missles
+  // draw enemy missiles
   for (var i in attackingEnemies) {
-    for (var j in attackingEnemies[i].missles) {
-      ctx.drawImage(images.lazer, attackingEnemies[i].missles[j].x, attackingEnemies[i].missles[j].y, 10, 20);
+    for (var j in attackingEnemies[i].missiles) {
+      ctx.drawImage(images.lazer, attackingEnemies[i].missiles[j].x, attackingEnemies[i].missiles[j].y, 10, 20);
     }
   }
 }
