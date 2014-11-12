@@ -459,8 +459,11 @@ function gameOver (ctx, sfx) {
 }
 
 function muteSounds (sfx) {
-  for (var i in sfx) {
-    sfx[i].muted = (sfx[i].muted == true ? false : true);
+  sfx.lazer.muted = (sfx.lazer.muted == true ? false : true);
+  sfx.shipDeath.muted = (sfx.shipDeath.muted == true ? false : true);
+  sfx.enemyDeath.muted = (sfx.enemyDeath.muted == true ? false : true);
+  for (var i in sfx.invaderMarch.sounds) {
+    sfx.invaderMarch.sounds[i].muted = (sfx.invaderMarch.sounds[i].muted == true ? false : true);
   }
 }
 
