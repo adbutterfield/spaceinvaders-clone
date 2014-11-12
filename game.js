@@ -12,6 +12,7 @@ var Ship = function (sfx) {
   this.sfx = sfx;
   this.lives = 3;
   this.score = 0;
+  this.disabled = false;
 }
 
 Ship.prototype.fireLazer = function (sfx) {
@@ -20,9 +21,11 @@ Ship.prototype.fireLazer = function (sfx) {
 };
 
 Ship.prototype.loseLife = function () {
-  if (this.lives > 1) {
+  if (this.lives > 0) {
     this.lives--;
-    nextLife();
+    this.disabled = true;
+    // clear keydown events
+    document.onkeydown = "";
   } else {
     gameOver();
   }
@@ -329,7 +332,7 @@ function imageLoader () {
   lazerImage.src = "images/lazer.png";
 
   var shipImage = new Image();
-  shipImage.src = "images/ship.png";
+  shipImage.src = "images/oldSchoolShip.png";
 
   var shipExplode = new Image();
   shipExplode.src = "images/shipExplode.png";
@@ -378,7 +381,9 @@ function updateSprites (canvas, ship, enemies, attackingEnemies, sfx) {
     attackShip(attackingEnemies, sfx.enemyDeath);
     checkShipMissleCollision(attackingEnemies, ship);
   }
-  moveShip(canvas, ship, sfx);
+  if (ship.disabled === false) {
+    moveShip(canvas, ship, sfx);
+  }
   moveLazers(ship);
   moveMissles(canvas, attackingEnemies);
 }
@@ -417,21 +422,17 @@ function drawSprites (ctx, canvas, ship, enemies, attackingEnemies, images) {
       ctx.drawImage(images.lazer, attackingEnemies[i].missiles[j].x, attackingEnemies[i].missiles[j].y, 10, 20);
     }
   }
+  // draw text
   ctx.font = "20px Telagrama";
   ctx.fillStyle = 'white';
   ctx.fillText("SCORE", 70, 43);
   ctx.fillText("LIVES", 540, 43);
   ctx.fillStyle = '#00FF00';
   ctx.fillText(ship.score, 150, 43);
-
   // draw lives
   for (var i = 1; i <= ship.lives; i++) {
     ctx.drawImage(images.ship, 580 + (40 * i), 20, ship.width/1.5, ship.height/1.5 );
   }
-}
-
-function nextLife () {
-  console.log("Next")
 }
 
 function gameOver () {
@@ -441,7 +442,15 @@ function gameOver () {
 // The main game loop //
 function main (ctx, canvas, ship, enemies, attackingEnemies, images, sfx) {
   // Update the position of sprites
-  updateSprites(canvas, ship, enemies, attackingEnemies, sfx);
+  if (ship.remove == true) {
+    setTimeout(function(){
+      // updateSprites(canvas, ship, enemies, attackingEnemies, sfx);
+      ship.remove = false;
+      ship.disabled = false;
+    }, 2000);
+  } else {
+    updateSprites(canvas, ship, enemies, attackingEnemies, sfx);
+  }
   drawSprites(ctx, canvas, ship, enemies, attackingEnemies, images);
   // Run main again on next animation frame
   requestAnimationFrame(function(){
