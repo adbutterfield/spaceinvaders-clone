@@ -11,12 +11,23 @@ var Ship = function () {
   this.remove = false;
   this.sfx = new Audio('sounds/shoot.wav');
   this.lives = 3;
+  this.score = 0;
 }
 
 Ship.prototype.fireLazer = function (sfx) {
   this.sfx.play();
   this.lazers[this.lazers.length] = new Lazer(this.x + this.width/2 - 6, sfx);
 };
+
+Ship.prototype.loseLife = function () {
+  if (this.lives > 1) {
+    this.lives--;
+    nextLife();
+  } else {
+    gameOver();
+  }
+};
+
 // controls //
 function moveShip (canvas, ship, attackingEnemies, sfx) {
   document.onkeydown = keydown;
@@ -281,7 +292,7 @@ function checkShipMissleCollision (attackingEnemies, ship) {
         if (attackingEnemies[i].missiles[j].detectCollision(ship)) {
           delete attackingEnemies[i].missiles[j];
           ship.remove = true;
-          // TODO, remove life or end game
+          ship.loseLife();
         }
       }
     }
@@ -387,6 +398,7 @@ function drawSprites (ctx, canvas, ship, enemies, attackingEnemies, images) {
       ctx.drawImage(images.enemies.death, enemies[i].x, enemies[i].y, 50, 35);
       resetAttackingEnemy(enemies, enemies[i], attackingEnemies);
       enemies.splice(i, 1);
+      ship.score += 10;
     } else {
       ctx.drawImage(enemies[i].sprites[enemies[i].frame], enemies[i].x, enemies[i].y, 50, 35);
     };
@@ -405,13 +417,22 @@ function drawSprites (ctx, canvas, ship, enemies, attackingEnemies, images) {
       ctx.drawImage(images.lazer, attackingEnemies[i].missiles[j].x, attackingEnemies[i].missiles[j].y, 10, 20);
     }
   }
-  ctx.font = "20px Monaco";
+  ctx.font = "20px Telagrama";
   ctx.fillStyle = 'white';
-  ctx.fillText("Lives", 540, 43);
+  ctx.fillText("SCORE " + ship.score, 70, 43);
+  ctx.fillText("LIVES", 540, 43);
   // draw lives
   for (var i = 1; i <= ship.lives; i++) {
-    ctx.drawImage(images.ship, 570 + (40 * i), 20, ship.width/1.5, ship.height/1.5 );
+    ctx.drawImage(images.ship, 580 + (40 * i), 20, ship.width/1.5, ship.height/1.5 );
   }
+}
+
+function nextLife () {
+  console.log("Next")
+}
+
+function gameOver () {
+  console.log("OVER")
 }
 
 // The main game loop //
