@@ -21,14 +21,10 @@ Ship.prototype.fireLazer = function (sfx) {
 };
 
 Ship.prototype.loseLife = function () {
-  if (this.lives > 0) {
-    this.lives--;
-    this.disabled = true;
-    // clear keydown events
-    document.onkeydown = "";
-  } else {
-    gameOver();
-  }
+  this.lives--;
+  this.disabled = true;
+  // clear keydown events
+  document.onkeydown = "";
 };
 
 // controls //
@@ -295,7 +291,9 @@ function checkShipMissleCollision (attackingEnemies, ship) {
         if (attackingEnemies[i].missiles[j].detectCollision(ship)) {
           delete attackingEnemies[i].missiles[j];
           ship.remove = true;
-          ship.loseLife();
+          if (ship.lives > 0) {
+            ship.loseLife();
+          }
         }
       }
     }
@@ -370,7 +368,7 @@ function soundLoader () {
   };
 }
 
-function updateSprites (canvas, ship, enemies, attackingEnemies, sfx) {
+function updateSprites (ctx, canvas, ship, enemies, attackingEnemies, sfx) {
   if (ship.lazers.length > 0) {
     checkEnemyLazerCollision(ship.lazers, enemies);
   }
@@ -379,7 +377,7 @@ function updateSprites (canvas, ship, enemies, attackingEnemies, sfx) {
   };
   if (attackingEnemies.length > 0) {
     attackShip(attackingEnemies, sfx.enemyDeath);
-    checkShipMissleCollision(attackingEnemies, ship);
+    checkShipMissleCollision(attackingEnemies, ship, ctx, sfx);
   }
   if (ship.disabled === false) {
     moveShip(canvas, ship, sfx);
@@ -435,34 +433,47 @@ function drawSprites (ctx, canvas, ship, enemies, attackingEnemies, images) {
   }
 }
 
-function gameOver () {
-  console.log("OVER")
-}
-
-// The main game loop //
-function main (ctx, canvas, ship, enemies, attackingEnemies, images, sfx) {
-  // Update the position of sprites
-  if (ship.remove == true) {
-    setTimeout(function(){
-      // updateSprites(canvas, ship, enemies, attackingEnemies, sfx);
-      ship.remove = false;
-      ship.disabled = false;
-    }, 2000);
-  } else {
-    updateSprites(canvas, ship, enemies, attackingEnemies, sfx);
+function gameOver (ctx, sfx) {
+  for (var i in sfx) {
+    sfx[i].muted = true;
   }
-  drawSprites(ctx, canvas, ship, enemies, attackingEnemies, images);
-  // Run main again on next animation frame
-  requestAnimationFrame(function(){
-    main(ctx, canvas, ship, enemies, attackingEnemies, images, sfx);
-  });
-};
+  ctx.font = "80px Telagrama";
+  ctx.fillStyle = '#00FF00';
+  ctx.strokeStyle = 'black';
+  ctx.lineWidth = 8;
+  ctx.strokeText("GAME OVER", 160, 300);
+  ctx.fillText("GAME OVER", 160, 300);
+}
 
 function muteSounds (sfx) {
   for (var i in sfx) {
     sfx[i].muted = (sfx[i].muted == true ? false : true);
   }
 }
+
+// The main game loop //
+function main (ctx, canvas, ship, enemies, attackingEnemies, images, sfx) {
+  // Update the position of sprites
+  if (ship.remove == true && ship.lives != 0) {
+    setTimeout(function(){
+      ship.remove = false;
+      ship.disabled = false;
+    }, 2000);
+  } else {
+    updateSprites(ctx, canvas, ship, enemies, attackingEnemies, sfx);
+  }
+  drawSprites(ctx, canvas, ship, enemies, attackingEnemies, images);
+  if (ship.lives == 0) {
+    gameOver(ctx, sfx);
+    // window.cancelAnimationFrame(function(){
+    //   main(ctx, canvas, ship, enemies, attackingEnemies, images, sfx);
+    // });
+  }
+  // Run main again on next animation frame
+  requestAnimationFrame(function(){
+    main(ctx, canvas, ship, enemies, attackingEnemies, images, sfx);
+  });
+};
 
 /* The Game */
 function game () {
@@ -471,7 +482,6 @@ function game () {
   var ctx = canvas.getContext("2d");
   canvas.width = 800;
   canvas.height = 600;
-  canvas.muted = true;
   // Load images
   var images = imageLoader();
   var invaders = invaderImages(images.enemies);
