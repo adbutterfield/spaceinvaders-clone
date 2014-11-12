@@ -10,14 +10,15 @@ var Ship = function () {
   this.lazers = [];
   this.remove = false;
   this.sfx = new Audio('sounds/shoot.wav');
+  this.lives = 3;
 }
 
-Ship.prototype.fireLazer = function () {
+Ship.prototype.fireLazer = function (sfx) {
   this.sfx.play();
-  this.lazers[this.lazers.length] = new Lazer(this.x + this.width/2 - 6);
+  this.lazers[this.lazers.length] = new Lazer(this.x + this.width/2 - 6, sfx);
 };
 // controls //
-function moveShip (canvas, ship) {
+function moveShip (canvas, ship, sfx) {
   document.onkeydown = keydown;
   function keydown (e) {
     if (e.keyCode == 37 && ship.x >= 50) {
@@ -27,20 +28,20 @@ function moveShip (canvas, ship) {
       ship.x += 10;
     }
     if (e.keyCode == 32) {
-      ship.fireLazer();
+      ship.fireLazer(sfx);
     }
   };
 }
 
 /* Lazer (for ship) */
 // constructor //
-var Lazer = function (x) {
+var Lazer = function (x, sfx) {
   this.x = x;
   this.y = 525;
   this.width = 10;
   this.height = 20;
   this.remove = false;
-  this.sfx = new Audio('sounds/invaderkilled.wav');
+  this.sfx = sfx;
 }
 
 Lazer.prototype.detectCollision = function (object) {
@@ -118,9 +119,9 @@ Enemy.prototype.nextFrame = function () {
   }
 }
 
-Enemy.prototype.fireMissle = function () {
+Enemy.prototype.fireMissle = function (sfx) {
   this.sfx.play();
-  this.missiles[this.missiles.length] = new Missle(this.x + this.width/2 - 6, this.y + this.height - 5);
+  this.missiles[this.missiles.length] = new Missle(this.x + this.width/2 - 6, this.y + this.height - 5, sfx);
 };
 
 // gets the furthest right, and left enemies on the board //
@@ -192,7 +193,7 @@ function createEnemies (images) {
       } else {
         imageIndex = 2;
       }
-      enemies[c] = new Enemy(c, (j * 50) + 20, (i * 50), images[imageIndex]);
+      enemies[c] = new Enemy(c, (j * 50) + 20, (i * 50) + 20, images[imageIndex]);
       c++
     }
   }
@@ -203,14 +204,14 @@ function getAttackingEnemies (enemies) {
   return enemies.slice(enemies.length - enemies.length/5);
 }
 
-function attackShip (attackingEnemies) {
+function attackShip (attackingEnemies, sfx) {
   for (var i in attackingEnemies) {
     var rand = Math.floor((Math.random() * 10) + 1) % 5;
     if (attackingEnemies[i].missileDely <= 120) {
       attackingEnemies[i].missileDely++;
     } else {
       if (rand === 0) {
-        attackingEnemies[i].fireMissle();
+        attackingEnemies[i].fireMissle(sfx);
       }
       attackingEnemies[i].missileDely = 0;
     }
@@ -239,13 +240,13 @@ function resetAttackingEnemy (enemies, enemy, attackingEnemies) {
 
 /* Missle (for enemies) */
 // constructor //
-var Missle = function (x, y) {
+var Missle = function (x, y, sfx) {
   this.x = x;
   this.y = y;
   this.width = 10;
   this.height = 20;
   this.remove = false;
-  this.sfx = new Audio('sounds/invaderkilled.wav');
+  this.sfx = sfx;
 }
 
 Missle.prototype.detectCollision = function (object) {
@@ -352,7 +353,7 @@ function soundLoader () {
   };
 }
 
-function updateSprites (canvas, ship, enemies, attackingEnemies) {
+function updateSprites (canvas, ship, enemies, attackingEnemies, sfx) {
   if (ship.lazers.length > 0) {
     checkEnemyLazerCollision(ship.lazers, enemies);
   }
@@ -360,10 +361,10 @@ function updateSprites (canvas, ship, enemies, attackingEnemies) {
     moveEnemies(canvas, enemies);
   };
   if (attackingEnemies.length > 0) {
-    attackShip(attackingEnemies, ship);
+    attackShip(attackingEnemies, sfx.enemyDeath);
     checkShipMissleCollision(attackingEnemies, ship);
   }
-  moveShip(canvas, ship);
+  moveShip(canvas, ship, sfx.enemyDeath);
   moveLazers(ship);
   moveMissles(canvas, attackingEnemies);
 }
@@ -401,18 +402,33 @@ function drawSprites (ctx, canvas, ship, enemies, attackingEnemies, images) {
       ctx.drawImage(images.lazer, attackingEnemies[i].missiles[j].x, attackingEnemies[i].missiles[j].y, 10, 20);
     }
   }
+  // draw lives
+  for (var i = 1; i <= ship.lives; i++) {
+    ctx.drawImage(images.ship, 570 + (40 * i), 20, ship.width/1.5, ship.height/1.5 );
+  }
 }
 
 // The main game loop //
-function main (ctx, canvas, ship, enemies, attackingEnemies, images) {
+function main (ctx, canvas, ship, enemies, attackingEnemies, images, sfx) {
   // Update the position of sprites
-  updateSprites(canvas, ship, enemies, attackingEnemies);
+  updateSprites(canvas, ship, enemies, attackingEnemies, sfx);
   drawSprites(ctx, canvas, ship, enemies, attackingEnemies, images);
   // Run main again on next animation frame
   requestAnimationFrame(function(){
-    main(ctx, canvas, ship, enemies, attackingEnemies, images);
+    main(ctx, canvas, ship, enemies, attackingEnemies, images, sfx);
   });
+  muteSounds(ship, attackingEnemies, sfx);
 };
+
+function muteSounds (ship, attackingEnemies, sfx) {
+  ship.sfx.muted = true;
+  for (var i in attackingEnemies) {
+    attackingEnemies[i].sfx.muted = true;
+  }
+  for (var i in sfx) {
+    sfx[i].muted = true;
+  }
+}
 
 /* The Game */
 function game () {
@@ -421,6 +437,7 @@ function game () {
   var ctx = canvas.getContext("2d");
   canvas.width = 800;
   canvas.height = 600;
+  canvas.muted = true;
   // Load images
   var images = imageLoader();
   var invaders = invaderImages(images.enemies);
@@ -431,7 +448,7 @@ function game () {
   var enemies = createEnemies(invaders);
   var attackingEnemies = getAttackingEnemies(enemies);
   // Kick off main game loop
-  main(ctx, canvas, ship, enemies, attackingEnemies, images);
+  main(ctx, canvas, ship, enemies, attackingEnemies, images, sfx);
 }
 
 // Let's play this game!
