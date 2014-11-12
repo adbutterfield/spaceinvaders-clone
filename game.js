@@ -224,14 +224,14 @@ function resetAttackingEnemy (enemies, enemy, attackingEnemies) {
       return element.x === enemy.x;
     });
     var nextAttacker = enemies[enemies.indexOf(column[column.length - 2])];
-    // pass on missiles to the next attacker if the enemy is destroyed, or else missiles would also be destroyed
+    // pass on missiles to another attacker if the enemy is destroyed, or else missiles would also be destroyed
+    if (enemy.missiles.length > 0) {
+      for (var i in enemy.missiles) {
+        attackingEnemies[attackingEnemies.length - 1].missiles.push(enemy.missiles[i]);
+      }
+    }
     if (nextAttacker) {
       attackingEnemies.push(nextAttacker);
-      if (enemy.missiles.length > 0) {
-        for (var i in enemy.missiles) {
-          nextAttacker.missiles.push(enemy.missiles[i]);
-        }
-      }
     }
     attackingEnemies.splice(atkEnmyIndex, 1);
   }
