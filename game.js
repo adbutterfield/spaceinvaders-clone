@@ -159,7 +159,7 @@ function reverseEnemies (enemies) {
 }
 
 // updates x and y values of enemies //
-function moveEnemies (canvas, enemies) {
+function moveEnemies (canvas, enemies, sfx) {
   var minMax = getEnemyMinAndMAx(enemies)
   if (minMax.maxXEnemy && minMax.maxXEnemy.direction == 'right') {
     if (minMax.maxXEnemy.x < (canvas.width - 100)) {
@@ -170,10 +170,12 @@ function moveEnemies (canvas, enemies) {
           enemies[i].frameCounter = 0;
           enemies[i].x += 10;
           enemies[i].nextFrame();
+          sfx.playSound = true;
         }
       }
     } else {
       reverseEnemies(enemies);
+      sfx.playSound = true;
     }
   } else {
     if (minMax.minXEnemy && minMax.minXEnemy.x > 50) {
@@ -184,10 +186,12 @@ function moveEnemies (canvas, enemies) {
           enemies[i].frameCounter = 0;
           enemies[i].x -= 10;
           enemies[i].nextFrame();
+          sfx.playSound = true;
         }
       }
     } else {
       reverseEnemies(enemies);
+      sfx.playSound = true;
     }
   }
 }
@@ -360,11 +364,14 @@ function invaderImages (images) {
 }
 
 function soundLoader () {
-  var lazerSound = new Audio('sounds/shoot.wav');
-  var enemyDeathSound = new Audio('sounds/invaderkilled.wav');
   return {
-    lazer: lazerSound,
-    enemyDeath: enemyDeathSound
+    lazer: new Audio('sounds/shoot.wav'),
+    shipDeath: new Audio('sounds/explosion.wav'),
+    enemyDeath: new Audio('sounds/invaderkilled.wav'),
+    invaderMarch: { playSound: false,
+                    counter: 0,
+                    sounds: [new Audio('sounds/fastinvader1.wav'), new Audio('sounds/fastinvader2.wav'), new Audio('sounds/fastinvader3.wav'), new Audio('sounds/fastinvader4.wav')]
+                  }
   };
 }
 
@@ -373,10 +380,19 @@ function updateSprites (ctx, canvas, ship, enemies, attackingEnemies, sfx) {
     checkEnemyLazerCollision(ship.lazers, enemies);
   }
   if (enemies.length > 0) {
-    moveEnemies(canvas, enemies);
+    moveEnemies(canvas, enemies, sfx.invaderMarch);
+    if (sfx.invaderMarch.playSound) {
+      sfx.invaderMarch.sounds[sfx.invaderMarch.counter].play();
+      if (sfx.invaderMarch.counter == 3) {
+        sfx.invaderMarch.counter = 0;
+      } else {
+        sfx.invaderMarch.counter++;
+      }
+      sfx.invaderMarch.playSound = false;
+    }
   };
   if (attackingEnemies.length > 0) {
-    attackShip(attackingEnemies, sfx.enemyDeath);
+    attackShip(attackingEnemies, sfx.shipDeath);
     checkShipMissleCollision(attackingEnemies, ship, ctx, sfx);
   }
   if (ship.disabled === false) {
@@ -421,7 +437,7 @@ function drawSprites (ctx, canvas, ship, enemies, attackingEnemies, images) {
     }
   }
   // draw text
-  ctx.font = "20px Telagrama";
+  ctx.font = "20px Telegrama";
   ctx.fillStyle = 'white';
   ctx.fillText("SCORE", 70, 43);
   ctx.fillText("LIVES", 540, 43);
@@ -434,10 +450,7 @@ function drawSprites (ctx, canvas, ship, enemies, attackingEnemies, images) {
 }
 
 function gameOver (ctx, sfx) {
-  for (var i in sfx) {
-    sfx[i].muted = true;
-  }
-  ctx.font = "80px Telagrama";
+  ctx.font = "80px Telegrama";
   ctx.fillStyle = '#00FF00';
   ctx.strokeStyle = 'black';
   ctx.lineWidth = 8;
