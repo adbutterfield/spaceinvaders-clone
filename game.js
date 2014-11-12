@@ -225,15 +225,15 @@ function resetAttackingEnemy (enemies, enemy, attackingEnemies) {
     });
     var nextAttacker = enemies[enemies.indexOf(column[column.length - 2])];
     // pass on missiles to the next attacker if the enemy is destroyed, or else missiles would also be destroyed
-    if (enemy.missiles.length > 0) {
-      for (var i in enemy.missiles) {
-        nextAttacker.missiles.push(enemy.missiles[i]);
+    if (nextAttacker) {
+      attackingEnemies.push(nextAttacker);
+      if (enemy.missiles.length > 0) {
+        for (var i in enemy.missiles) {
+          nextAttacker.missiles.push(enemy.missiles[i]);
+        }
       }
     }
     attackingEnemies.splice(atkEnmyIndex, 1);
-    if (nextAttacker) {
-      attackingEnemies.push(nextAttacker);
-    }
   }
 }
 
@@ -357,7 +357,7 @@ function updateSprites (canvas, ship, enemies, attackingEnemies) {
     checkEnemyLazerCollision(ship.lazers, enemies);
   }
   if (enemies.length > 0) {
-    // moveEnemies(canvas, enemies);
+    moveEnemies(canvas, enemies);
   };
   if (attackingEnemies.length > 0) {
     attackShip(attackingEnemies, ship);
