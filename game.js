@@ -247,13 +247,7 @@ var Missle = function (x, y) {
 }
 
 Missle.prototype.detectCollision = function (object) {
-  // object top
-  var objTop = object.y
-  // object right corner
-  var objRtCr = object.x + object.width
-  // object left corner
-  var objLtCr = object.x
-  if (this.y + this.height == objTop && this.x >= objLtCr && (this.x + this.width) <= objRtCr ) {
+  if ((this.x >= object.x) && ((this.x + this.width) <= (object.x + object.width))) {
     this.sfx.play();
     return true;
   } else {
@@ -277,9 +271,12 @@ function moveMissles (canvas, attackingEnemies) {
 function checkShipMissleCollision (attackingEnemies, ship) {
   for (var i in attackingEnemies) {
     for (var j in attackingEnemies[i].missles) {
-      if (attackingEnemies[i].missles[j].detectCollision(ship)) {
-        ship.remove = true;
-        // TODO, remove life or end game
+      if (attackingEnemies[i].missles[j].y >= ship.y && attackingEnemies[i].missles[j].y > ship.y) {
+        if (attackingEnemies[i].missles[j].detectCollision(ship)) {
+          delete attackingEnemies[i].missles[j];
+          ship.remove = true;
+          // TODO, remove life or end game
+        }
       }
     }
   }
