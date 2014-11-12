@@ -223,8 +223,14 @@ function resetAttackingEnemy (enemies, enemy, attackingEnemies) {
     var column = enemies.filter(function(element){
       return element.x === enemy.x;
     });
-    attackingEnemies.splice(atkEnmyIndex, 1);
     var nextAttacker = enemies[enemies.indexOf(column[column.length - 2])];
+    // pass on missles to the next attacker if the enemy is destroyed, or else missles would also be destroyed
+    if (enemy.missles.length > 0) {
+      for (var i in enemy.missles) {
+        nextAttacker.missles.push(enemy.missles[i]);
+      }
+    }
+    attackingEnemies.splice(atkEnmyIndex, 1);
     if (nextAttacker) {
       attackingEnemies.push(nextAttacker);
     }
