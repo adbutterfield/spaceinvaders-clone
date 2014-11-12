@@ -101,7 +101,7 @@ var Enemy = function (id, x, y, sprites) {
   this.frameCounter = 0;
   this.missleDely = Math.floor((Math.random() * 30) + 1);
   this.missles = [];
-  this.sfx = new Audio('sounds/invaderkilled.wav');
+  this.sfx = new Audio('sounds/shoot.wav');
 }
 
 Enemy.prototype.reverseDirection = function () {
@@ -222,13 +222,16 @@ function attackShip (attackingEnemies) {
 }
 
 function resetAttackingEnemy (enemies, enemy, attackingEnemies) {
-  var column = enemies.filter(function(element){
-    return element.x === enemy.x;
-  });
-  attackingEnemies.splice(atkEnmyIndex, 1);
-  var nextAttacker = enemies[enemies.indexOf(column[column.length - 2])];
-  if (nextAttacker) {
-    attackingEnemies.push(nextAttacker);
+  var atkEnmyIndex = attackingEnemies.indexOf(enemy);
+  if (atkEnmyIndex !== -1){
+    var column = enemies.filter(function(element){
+      return element.x === enemy.x;
+    });
+    attackingEnemies.splice(atkEnmyIndex, 1);
+    var nextAttacker = enemies[enemies.indexOf(column[column.length - 2])];
+    if (nextAttacker) {
+      attackingEnemies.push(nextAttacker);
+    }
   }
 }
 
@@ -250,7 +253,7 @@ Missle.prototype.detectCollision = function (object) {
   var objRtCr = object.x + object.width
   // object left corner
   var objLtCr = object.x
-  if (this.y + this.height == objTop && (this.x - this.width) >= objLtCr && this.x <= objRtCr ) {
+  if (this.y + this.height == objTop && this.x >= objLtCr && (this.x + this.width) <= objRtCr ) {
     this.sfx.play();
     return true;
   } else {
@@ -259,11 +262,11 @@ Missle.prototype.detectCollision = function (object) {
 }
 
 // update y value of missles //
-function moveMissles (attackingEnemies) {
+function moveMissles (canvas, attackingEnemies) {
   for (var i in attackingEnemies) {
     for (var j in attackingEnemies[i].missles) {
       attackingEnemies[i].missles[j].y += 3;
-      if (attackingEnemies[i].missles[j].y < 0) {
+      if (attackingEnemies[i].missles[j].y > canvas.height) {
         delete attackingEnemies[i].missles[j];
       }
     }
@@ -355,7 +358,7 @@ function updateSprites (canvas, ship, enemies, attackingEnemies) {
     checkEnemyLazerCollision(ship.lazers, enemies);
   }
   if (enemies.length > 0) {
-    moveEnemies(canvas, enemies);
+    // moveEnemies(canvas, enemies);
   };
   if (attackingEnemies.length > 0) {
     attackShip(attackingEnemies, ship);
@@ -363,7 +366,7 @@ function updateSprites (canvas, ship, enemies, attackingEnemies) {
   }
   moveShip(canvas, ship);
   moveLazers(ship);
-  moveMissles(attackingEnemies);
+  moveMissles(canvas, attackingEnemies);
 }
 
 function drawSprites (ctx, canvas, ship, enemies, attackingEnemies, images) {
@@ -379,10 +382,7 @@ function drawSprites (ctx, canvas, ship, enemies, attackingEnemies, images) {
   for (var i in enemies) {
     if (enemies[i].remove) {
       ctx.drawImage(images.enemies.death, enemies[i].x, enemies[i].y, 50, 35);
-      var atkEnmyIndex = attackingEnemies.indexOf(enemies[i]);
-      if (atkEnmyIndex !== -1){
-        resetAttackingEnemy(enemies, enemies[i], attackingEnemies);
-      }
+      resetAttackingEnemy(enemies, enemies[i], attackingEnemies);
       enemies.splice(i, 1);
     } else {
       ctx.drawImage(enemies[i].sprites[enemies[i].frame], enemies[i].x, enemies[i].y, 50, 35);
