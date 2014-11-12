@@ -19,5 +19,9 @@
   background-image: url('ship.jpg');
   background-size: contain;
   position: absolute;
+}
 
+@font-face {
+  font-family: 'Telagrama';
+  src: url("fonts/telegrama_raw.otf") format("opentype");
 }
