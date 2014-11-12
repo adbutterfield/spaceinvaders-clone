@@ -44,13 +44,7 @@ var Lazer = function (x) {
 }
 
 Lazer.prototype.detectCollision = function (object) {
-  // object bottom
-  var objBtm = object.y + object.height
-  // object right corner
-  var objRtCr = object.x + object.width
-  // object left corner
-  var objLtCr = object.x
-  if (this.y == objBtm && (this.x - this.width) >= objLtCr && this.x <= objRtCr ) {
+  if ((this.x - this.width) >= (object.x - 5) && this.x <= (object.x + object.width - 5)) {
     this.sfx.play();
     return true;
   } else {
@@ -72,14 +66,16 @@ function moveLazers (ship) {
 function checkEnemyLazerCollision (lazers, enemies) {
   for (var i in lazers) {
     for (var j in enemies) {
-      if (lazers[i].detectCollision(enemies[j])) {
-        var remainingLazers = lazers.slice(i + 1);
-        lazers[i].remove = true;
-        enemies[j].remove = true;
-        if (remainingLazers.length > 0) {
-          checkEnemyLazerCollision(remainingLazers, enemies);
-        } else {
-          return false;
+      if (lazers[i].y <= (enemies[j].y + enemies[j].height)) {
+        if (lazers[i].detectCollision(enemies[j])) {
+          var remainingLazers = lazers.slice(i + 1);
+          lazers[i].remove = true;
+          enemies[j].remove = true;
+          if (remainingLazers.length > 0) {
+            checkEnemyLazerCollision(remainingLazers, enemies);
+          } else {
+            return false;
+          }
         }
       }
     }
