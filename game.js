@@ -419,8 +419,11 @@ function drawSprites (ctx, canvas, ship, enemies, attackingEnemies, images) {
   }
   ctx.font = "20px Telagrama";
   ctx.fillStyle = 'white';
-  ctx.fillText("SCORE " + ship.score, 70, 43);
+  ctx.fillText("SCORE", 70, 43);
   ctx.fillText("LIVES", 540, 43);
+  ctx.fillStyle = '#00FF00';
+  ctx.fillText(ship.score, 150, 43);
+
   // draw lives
   for (var i = 1; i <= ship.lives; i++) {
     ctx.drawImage(images.ship, 580 + (40 * i), 20, ship.width/1.5, ship.height/1.5 );
