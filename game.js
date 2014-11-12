@@ -18,7 +18,7 @@ Ship.prototype.fireLazer = function (sfx) {
   this.lazers[this.lazers.length] = new Lazer(this.x + this.width/2 - 6, sfx);
 };
 // controls //
-function moveShip (canvas, ship, sfx) {
+function moveShip (canvas, ship, attackingEnemies, sfx) {
   document.onkeydown = keydown;
   function keydown (e) {
     if (e.keyCode == 37 && ship.x >= 50) {
@@ -28,7 +28,10 @@ function moveShip (canvas, ship, sfx) {
       ship.x += 10;
     }
     if (e.keyCode == 32) {
-      ship.fireLazer(sfx);
+      ship.fireLazer(sfx.enemyDeath);
+    }
+    if (e.keyCode == 77) {
+      muteSounds(ship, attackingEnemies, sfx);
     }
   };
 }
@@ -364,7 +367,7 @@ function updateSprites (canvas, ship, enemies, attackingEnemies, sfx) {
     attackShip(attackingEnemies, sfx.enemyDeath);
     checkShipMissleCollision(attackingEnemies, ship);
   }
-  moveShip(canvas, ship, sfx.enemyDeath);
+  moveShip(canvas, ship, attackingEnemies, sfx);
   moveLazers(ship);
   moveMissles(canvas, attackingEnemies);
 }
@@ -402,6 +405,9 @@ function drawSprites (ctx, canvas, ship, enemies, attackingEnemies, images) {
       ctx.drawImage(images.lazer, attackingEnemies[i].missiles[j].x, attackingEnemies[i].missiles[j].y, 10, 20);
     }
   }
+  ctx.font = "20px Monaco";
+  ctx.fillStyle = 'white';
+  ctx.fillText("Lives", 540, 43);
   // draw lives
   for (var i = 1; i <= ship.lives; i++) {
     ctx.drawImage(images.ship, 570 + (40 * i), 20, ship.width/1.5, ship.height/1.5 );
@@ -417,16 +423,15 @@ function main (ctx, canvas, ship, enemies, attackingEnemies, images, sfx) {
   requestAnimationFrame(function(){
     main(ctx, canvas, ship, enemies, attackingEnemies, images, sfx);
   });
-  muteSounds(ship, attackingEnemies, sfx);
 };
 
 function muteSounds (ship, attackingEnemies, sfx) {
-  ship.sfx.muted = true;
+  ship.sfx.muted = (ship.sfx.muted == true ? false : true);
   for (var i in attackingEnemies) {
-    attackingEnemies[i].sfx.muted = true;
+    attackingEnemies[i].sfx.muted = (attackingEnemies[i].sfx.muted == true ? false : true);
   }
   for (var i in sfx) {
-    sfx[i].muted = true;
+    sfx[i].muted = (sfx[i].muted == true ? false : true);
   }
 }
 
