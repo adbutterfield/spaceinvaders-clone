@@ -282,7 +282,7 @@ function moveMissles (canvas, attackingEnemies) {
     for (var j in attackingEnemies[i].missiles) {
       attackingEnemies[i].missiles[j].y += 3;
       if (attackingEnemies[i].missiles[j].y > canvas.height) {
-        delete attackingEnemies[i].missiles[j];
+        attackingEnemies[i].missiles.splice(attackingEnemies[i].missiles.indexOf(attackingEnemies[i].missiles[j]), 1)
       }
     }
   }
@@ -294,7 +294,7 @@ function checkShipMissleCollision (attackingEnemies, ship) {
     for (var j in attackingEnemies[i].missiles) {
       if (attackingEnemies[i].missiles[j].y >= ship.y && attackingEnemies[i].missiles[j].y > ship.y) {
         if (attackingEnemies[i].missiles[j].detectCollision(ship)) {
-          delete attackingEnemies[i].missiles[j];
+          attackingEnemies[i].missiles.splice(attackingEnemies[i].missiles.indexOf(attackingEnemies[i].missiles[j]), 1)
           ship.remove = true;
           if (ship.lives > 0) {
             ship.loseLife();
