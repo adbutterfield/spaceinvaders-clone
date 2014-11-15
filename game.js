@@ -198,7 +198,6 @@ function moveEnemies (canvas, enemies, sfx) {
       }
     } else {
       reverseEnemies(enemies);
-      sfx.playSound = true;
     }
   } else {
     if (minMax.minXEnemy && minMax.minXEnemy.x > 50) {
@@ -214,7 +213,6 @@ function moveEnemies (canvas, enemies, sfx) {
       }
     } else {
       reverseEnemies(enemies);
-      sfx.playSound = true;
     }
   }
 }
@@ -394,7 +392,7 @@ function soundLoader () {
     fanfare: new Audio('sounds/fanfare.mp3'),
     invaderMarch: { playSound: false,
                     counter: 0,
-                    sounds: [new Audio('sounds/fastinvader1.wav'), new Audio('sounds/fastinvader2.wav'), new Audio('sounds/fastinvader3.wav'), new Audio('sounds/fastinvader4.wav')]
+                    sounds: [new Audio('sounds/fastinvader4.wav'), new Audio('sounds/fastinvader1.wav'), new Audio('sounds/fastinvader2.wav'), new Audio('sounds/fastinvader3.wav')]
                   }
   };
 }
