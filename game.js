@@ -95,7 +95,7 @@ function moveLazers (ship) {
 function checkEnemyLazerCollision (lazers, enemies) {
   for (var i in lazers) {
     for (var j in enemies) {
-      if (lazers[i].y <= (enemies[j].y + enemies[j].height)) {
+      if (lazers[i].y <= (enemies[j].y + enemies[j].height) && (lazers[i].remove == false)) {
         if (lazers[i].detectCollision(enemies[j])) {
           var remainingLazers = lazers.slice(i + 1);
           lazers[i].remove = true;
@@ -145,12 +145,20 @@ Enemy.prototype.nextFrame = function () {
   } else {
     this.frame = 1;
   }
-}
+};
 
 Enemy.prototype.fireMissle = function (sfx) {
   this.sfx.play();
   this.missiles[this.missiles.length] = new Missle(this.x + this.width/2 - 6, this.y + this.height - 5, sfx);
 };
+
+Enemy.prototype.moveRight = function () {
+  this.x += 10;
+}
+
+Enemy.prototype.moveLeft = function () {
+  this.x -= 10;
+}
 
 // gets the furthest right, and left enemies on the board //
 function getEnemyMinAndMAx (enemies) {
@@ -183,7 +191,7 @@ function moveEnemies (canvas, enemies, sfx) {
           enemies[i].frameCounter++;
         } else {
           enemies[i].frameCounter = 0;
-          enemies[i].x += 10;
+          enemies[i].moveRight();
           enemies[i].nextFrame();
           sfx.playSound = true;
         }
@@ -199,7 +207,7 @@ function moveEnemies (canvas, enemies, sfx) {
           enemies[i].frameCounter++;
         } else {
           enemies[i].frameCounter = 0;
-          enemies[i].x -= 10;
+          enemies[i].moveLeft();
           enemies[i].nextFrame();
           sfx.playSound = true;
         }
@@ -383,6 +391,7 @@ function soundLoader () {
     lazer: new Audio('sounds/shoot.wav'),
     shipDeath: new Audio('sounds/explosion.wav'),
     enemyDeath: new Audio('sounds/invaderkilled.wav'),
+    fanfare: new Audio('sounds/fanfare.mp3'),
     invaderMarch: { playSound: false,
                     counter: 0,
                     sounds: [new Audio('sounds/fastinvader1.wav'), new Audio('sounds/fastinvader2.wav'), new Audio('sounds/fastinvader3.wav'), new Audio('sounds/fastinvader4.wav')]
@@ -494,6 +503,9 @@ function main (ctx, canvas, ship, enemies, attackingEnemies, images, sfx, charMa
     updateSprites(ctx, canvas, ship, enemies, attackingEnemies, sfx, charMap);
   }
   drawSprites(ctx, canvas, ship, enemies, attackingEnemies, images);
+  if (enemies.length == 0) {
+    sfx.fanfare.play();
+  }
   if (ship.lives == 0) {
     gameOver(ctx);
     // window.cancelAnimationFrame(function(){
@@ -523,7 +535,7 @@ function game () {
   var enemies = createEnemies(invaders, sfx.lazer);
   var attackingEnemies = getAttackingEnemies(enemies);
   // Char map
-  var charMap = []; // Or you could call it "key"
+  var charMap = [];
   // Kick off main game loop
   main(ctx, canvas, ship, enemies, attackingEnemies, images, sfx, charMap);
 }
