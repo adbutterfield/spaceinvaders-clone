@@ -16,8 +16,10 @@ var Ship = function (sfx) {
 }
 
 Ship.prototype.fireLazer = function (sfx) {
-  this.sfx.play();
-  this.lazers[this.lazers.length] = new Lazer(this.x + this.width/2 - 6, sfx);
+  if (this.lazers.length === 0 || (this.lazers[this.lazers.length - 1] && this.lazers[this.lazers.length - 1].y < 300)) {
+    this.sfx.play();
+    this.lazers[this.lazers.length] = new Lazer(this.x + this.width/2 - 6, sfx);
+  }
 };
 
 Ship.prototype.loseLife = function () {
@@ -27,24 +29,36 @@ Ship.prototype.loseLife = function () {
   document.onkeydown = "";
 };
 
+Ship.prototype.moveRight = function () {
+  this.x += 10;
+};
+
+Ship.prototype.moveLeft = function () {
+  this.x -= 10;
+};
+
 // controls //
-function moveShip (canvas, ship, sfx) {
-  document.onkeydown = function (e) {
-    if (e.keyCode == 37 && ship.x >= 50) {
-      ship.x -= 10;
-    }
-    if (e.keyCode == 39 && ship.x <= (canvas.width - 100)) {
-      ship.x += 10;
-    }
-    if (e.keyCode == 32) {
-      if (ship.lazers.length === 0 || (ship.lazers[ship.lazers.length - 1] && ship.lazers[ship.lazers.length - 1].y < 300)) {
-        ship.fireLazer(sfx.enemyDeath);
-      }
-    }
-    if (e.keyCode == 77) {
+function moveShip (canvas, ship, sfx, charMap) {
+  document.onkeydown = document.onkeyup = function(e){
+    e = e || event; // to deal with IE
+    charMap[e.keyCode] = e.type == 'keydown';
+
+    if (charMap[37] && charMap[32] && ship.x >= 50) {
+      ship.moveLeft();
+      ship.fireLazer(sfx.enemyDeath);
+    } else if (charMap[37] && ship.x >= 50) {
+      ship.moveLeft();
+    } else if (charMap[39] && charMap[32] && ship.x <= (canvas.width - 100)) {
+      ship.moveRight();
+      ship.fireLazer(sfx.enemyDeath);
+    } else if (charMap[39] && ship.x <= (canvas.width - 100)) {
+      ship.moveRight();
+    } else if (charMap[32]) {
+      ship.fireLazer(sfx.enemyDeath);
+    } else if (charMap[77]) {
       muteSounds(sfx);
     }
-  };
+  }
 }
 
 /* Lazer (for ship) */
@@ -376,7 +390,7 @@ function soundLoader () {
   };
 }
 
-function updateSprites (ctx, canvas, ship, enemies, attackingEnemies, sfx) {
+function updateSprites (ctx, canvas, ship, enemies, attackingEnemies, sfx, charMap) {
   if (ship.lazers.length > 0) {
     checkEnemyLazerCollision(ship.lazers, enemies);
   }
@@ -397,7 +411,7 @@ function updateSprites (ctx, canvas, ship, enemies, attackingEnemies, sfx) {
     checkShipMissleCollision(attackingEnemies, ship, ctx, sfx);
   }
   if (ship.disabled === false) {
-    moveShip(canvas, ship, sfx);
+    moveShip(canvas, ship, sfx, charMap);
   }
   moveLazers(ship);
   moveMissles(canvas, attackingEnemies);
@@ -469,7 +483,7 @@ function muteSounds (sfx) {
 }
 
 // The main game loop //
-function main (ctx, canvas, ship, enemies, attackingEnemies, images, sfx) {
+function main (ctx, canvas, ship, enemies, attackingEnemies, images, sfx, charMap) {
   // Update the position of sprites
   if (ship.remove == true && ship.lives != 0) {
     setTimeout(function(){
@@ -477,7 +491,7 @@ function main (ctx, canvas, ship, enemies, attackingEnemies, images, sfx) {
       ship.disabled = false;
     }, 2000);
   } else {
-    updateSprites(ctx, canvas, ship, enemies, attackingEnemies, sfx);
+    updateSprites(ctx, canvas, ship, enemies, attackingEnemies, sfx, charMap);
   }
   drawSprites(ctx, canvas, ship, enemies, attackingEnemies, images);
   if (ship.lives == 0) {
@@ -488,7 +502,7 @@ function main (ctx, canvas, ship, enemies, attackingEnemies, images, sfx) {
   }
   // Run main again on next animation frame
   requestAnimationFrame(function(){
-    main(ctx, canvas, ship, enemies, attackingEnemies, images, sfx);
+    main(ctx, canvas, ship, enemies, attackingEnemies, images, sfx, charMap);
   });
 };
 
@@ -508,8 +522,10 @@ function game () {
   var ship = new Ship(sfx.lazer);
   var enemies = createEnemies(invaders, sfx.lazer);
   var attackingEnemies = getAttackingEnemies(enemies);
+  // Char map
+  var charMap = []; // Or you could call it "key"
   // Kick off main game loop
-  main(ctx, canvas, ship, enemies, attackingEnemies, images, sfx);
+  main(ctx, canvas, ship, enemies, attackingEnemies, images, sfx, charMap);
 }
 
 // Let's play this game!
