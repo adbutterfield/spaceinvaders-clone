@@ -37,30 +37,6 @@ Ship.prototype.moveLeft = function () {
   this.x -= 10;
 };
 
-// controls //
-function moveShip (canvas, ship, sfx, charMap) {
-  document.onkeydown = document.onkeyup = function(e){
-    e = e || event; // to deal with IE
-    charMap[e.keyCode] = e.type == 'keydown';
-
-    if (charMap[37] && charMap[32] && ship.x >= 50) {
-      ship.moveLeft();
-      ship.fireLazer(sfx.enemyDeath);
-    } else if (charMap[37] && ship.x >= 50) {
-      ship.moveLeft();
-    } else if (charMap[39] && charMap[32] && ship.x <= (canvas.width - 100)) {
-      ship.moveRight();
-      ship.fireLazer(sfx.enemyDeath);
-    } else if (charMap[39] && ship.x <= (canvas.width - 100)) {
-      ship.moveRight();
-    } else if (charMap[32]) {
-      ship.fireLazer(sfx.enemyDeath);
-    } else if (charMap[77]) {
-      muteSounds(sfx);
-    }
-  }
-};
-
 /* Lazer (for ship) */
 // constructor //
 var Lazer = function (x, sfx) {
@@ -78,36 +54,6 @@ Lazer.prototype.detectCollision = function (object) {
     return true;
   } else {
     return false;
-  }
-};
-
-// update y value of lazers //
-function moveLazers (ship) {
-  for (var i in ship.lazers) {
-    ship.lazers[i].y -= 5;
-    if (ship.lazers[i].y <= 0) {
-      ship.lazers.splice(ship.lazers.indexOf(ship.lazers[i]), 1);
-    }
-  }
-};
-
-// check for collisions between lazers and enemies //
-function checkEnemyLazerCollision (lazers, enemies) {
-  for (var i in lazers) {
-    for (var j in enemies) {
-      if (lazers[i].y <= (enemies[j].y + enemies[j].height) && (lazers[i].remove == false)) {
-        if (lazers[i].detectCollision(enemies[j])) {
-          var remainingLazers = lazers.slice(i + 1);
-          lazers[i].remove = true;
-          enemies[j].remove = true;
-          if (remainingLazers.length > 0) {
-            checkEnemyLazerCollision(remainingLazers, enemies);
-          } else {
-            return false;
-          }
-        }
-      }
-    }
   }
 };
 
@@ -160,61 +106,6 @@ Enemy.prototype.moveLeft = function () {
   this.x -= 10;
 };
 
-// gets the furthest right, and left enemies on the board //
-function getEnemyMinAndMAx (enemies) {
-  var minXEnemy = enemies[enemies.length - 1];
-  var maxXEnemy = enemies[enemies.length - 1];
-  for (var i = enemies.length - 1; i >= 0; i--){
-    if (enemies[i].x < minXEnemy.x) minXEnemy = enemies[i];
-    if (enemies[i].x > maxXEnemy.x) maxXEnemy = enemies[i];
-  }
-  return { minXEnemy: minXEnemy, maxXEnemy: maxXEnemy }
-};
-
-// move enemies forward (down) and reverse the direction //
-function reverseEnemies (enemies) {
-  for (var i in enemies) {
-    enemies[i].y += 20;
-    enemies[i].reverseDirection();
-  }
-};
-
-// updates x and y values of enemies //
-function moveEnemies (canvas, enemies, sfx) {
-  var minMax = getEnemyMinAndMAx(enemies);
-  if (minMax.maxXEnemy && minMax.maxXEnemy.direction == 'right') {
-    if (minMax.maxXEnemy.x < (canvas.width - 100)) {
-      for (var i in enemies) {
-        if (enemies[i].frameCounter <= enemies.length) {
-          enemies[i].frameCounter++;
-        } else {
-          enemies[i].frameCounter = 0;
-          enemies[i].moveRight();
-          enemies[i].nextFrame();
-          sfx.playSound = true;
-        }
-      }
-    } else {
-      reverseEnemies(enemies);
-    }
-  } else {
-    if (minMax.minXEnemy && minMax.minXEnemy.x > 50) {
-      for (var i in enemies) {
-        if (enemies[i].frameCounter <= enemies.length) {
-          enemies[i].frameCounter++;
-        } else {
-          enemies[i].frameCounter = 0;
-          enemies[i].moveLeft();
-          enemies[i].nextFrame();
-          sfx.playSound = true;
-        }
-      }
-    } else {
-      reverseEnemies(enemies);
-    }
-  }
-};
-
 function createEnemies (images, sfx) {
   var enemies = [];
   // use another counter to save from using multi-dimensional array
@@ -238,20 +129,6 @@ function createEnemies (images, sfx) {
 
 function getAttackingEnemies (enemies) {
   return enemies.slice(enemies.length - enemies.length/5);
-};
-
-function attackShip (attackingEnemies, sfx) {
-  for (var i in attackingEnemies) {
-    var rand = Math.floor((Math.random() * 10) + 1) % 5;
-    if (attackingEnemies[i].missileDely <= 120) {
-      attackingEnemies[i].missileDely++;
-    } else {
-      if (rand === 0) {
-        attackingEnemies[i].fireMissle(sfx);
-      }
-      attackingEnemies[i].missileDely = 0;
-    }
-  }
 };
 
 function resetAttackingEnemy (enemies, enemy, attackingEnemies) {
@@ -291,35 +168,6 @@ Missle.prototype.detectCollision = function (object) {
     return true;
   } else {
     return false;
-  }
-};
-
-// update y value of missiles //
-function moveMissles (canvas, attackingEnemies) {
-  for (var i in attackingEnemies) {
-    for (var j in attackingEnemies[i].missiles) {
-      attackingEnemies[i].missiles[j].y += 3;
-      if (attackingEnemies[i].missiles[j].y > canvas.height) {
-        attackingEnemies[i].missiles.splice(attackingEnemies[i].missiles.indexOf(attackingEnemies[i].missiles[j]), 1);
-      }
-    }
-  }
-};
-
-// check for collisions between missiles and the ship //
-function checkShipMissleCollision (attackingEnemies, ship) {
-  for (var i in attackingEnemies) {
-    for (var j in attackingEnemies[i].missiles) {
-      if (attackingEnemies[i].missiles[j].y >= ship.y && attackingEnemies[i].missiles[j].y > ship.y) {
-        if (attackingEnemies[i].missiles[j].detectCollision(ship)) {
-          attackingEnemies[i].missiles.splice(attackingEnemies[i].missiles.indexOf(attackingEnemies[i].missiles[j]), 1);
-          ship.remove = true;
-          if (ship.lives > 0) {
-            ship.loseLife();
-          }
-        }
-      }
-    }
   }
 };
 
@@ -395,33 +243,6 @@ function soundLoader () {
   };
 };
 
-function updateSprites (ctx, canvas, ship, enemies, attackingEnemies, sfx, charMap) {
-  if (ship.lazers.length > 0) {
-    checkEnemyLazerCollision(ship.lazers, enemies);
-  }
-  if (enemies.length > 0) {
-    moveEnemies(canvas, enemies, sfx.invaderMarch);
-    if (sfx.invaderMarch.playSound) {
-      sfx.invaderMarch.sounds[sfx.invaderMarch.counter].play();
-      if (sfx.invaderMarch.counter == 3) {
-        sfx.invaderMarch.counter = 0;
-      } else {
-        sfx.invaderMarch.counter++;
-      }
-      sfx.invaderMarch.playSound = false;
-    }
-  };
-  if (attackingEnemies.length > 0) {
-    attackShip(attackingEnemies, sfx.shipDeath);
-    checkShipMissleCollision(attackingEnemies, ship, ctx, sfx);
-  }
-  if (ship.disabled === false) {
-    moveShip(canvas, ship, sfx, charMap);
-  }
-  moveLazers(ship);
-  moveMissles(canvas, attackingEnemies);
-};
-
 function drawSprites (ctx, canvas, ship, enemies, attackingEnemies, images) {
   // clear the canvas on the start of each draw cycle
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -488,56 +309,238 @@ function muteSounds (sfx) {
 };
 
 // The main game loop //
-function main (ctx, canvas, ship, enemies, attackingEnemies, images, sfx, charMap) {
+function main (game) {
   // Update the position of sprites
-  if (ship.remove == true && ship.lives != 0) {
+  if (game.ship.remove == true && game.ship.lives != 0) {
     setTimeout(function(){
-      ship.remove = false;
-      ship.disabled = false;
+      game.ship.remove = false;
+      game.ship.disabled = false;
     }, 2000);
   } else {
-    updateSprites(ctx, canvas, ship, enemies, attackingEnemies, sfx, charMap);
+    game.updateSprites();
   }
-  drawSprites(ctx, canvas, ship, enemies, attackingEnemies, images);
-  if (enemies.length == 0) {
-    sfx.fanfare.play();
+  drawSprites(game.ctx, game.canvas, game.ship, game.enemies, game.attackingEnemies, game.images);
+  if (game.enemies.length == 0) {
+    game.sfx.fanfare.play();
   }
-  if (ship.lives == 0) {
-    gameOver(ctx);
+  if (game.ship.lives == 0) {
+    gameOver(game.ctx);
     // window.cancelAnimationFrame(function(){
-    //   main(ctx, canvas, ship, enemies, attackingEnemies, images, sfx);
+    //   main(ctx, canvas, game.ship, enemies, attackingEnemies, images, sfx);
     // });
   }
   // Run main again on next animation frame
   requestAnimationFrame(function(){
-    main(ctx, canvas, ship, enemies, attackingEnemies, images, sfx, charMap);
+    main(game);
   });
 };
 
 /* The Game */
-function game () {
+// constructor //
+var Game = function (canvas) {
   // Create canvas
-  var canvas = document.getElementById("space");
-  var ctx = canvas.getContext("2d");
-  canvas.width = 800;
-  canvas.height = 600;
+  this.canvas = document.getElementById(canvas);
+  this.ctx = this.canvas.getContext("2d");
+  this.canvas.width = 800;
+  this.canvas.height = 600;
   // Load images
-  var images = imageLoader();
-  var invaders = invaderImages(images.enemies);
+  this.images = imageLoader();
+  this.invaders = invaderImages(this.images.enemies);
   // Load sounds
-  var sfx = soundLoader();
+  this.sfx = soundLoader();
   // Create sprites
-  var ship = new Ship(sfx.lazer);
-  var enemies = createEnemies(invaders, sfx.lazer);
-  var attackingEnemies = getAttackingEnemies(enemies);
+  this.ship = new Ship(this.sfx.lazer);
+  this.enemies = createEnemies(this.invaders, this.sfx.lazer);
+  this.attackingEnemies = getAttackingEnemies(this.enemies);
   // Char map
-  var charMap = [];
-  // Kick off main game loop
-  main(ctx, canvas, ship, enemies, attackingEnemies, images, sfx, charMap);
+  this.charMap = [];
 };
 
-// Let's play this game!
-game();
+// check for collisions between lazers and enemies //
+Game.prototype.checkEnemyLazerCollision = function (lazers) {
+  for (var i in lazers) {
+    for (var j in this.enemies) {
+      if (lazers[i].y <= (this.enemies[j].y + this.enemies[j].height) && (lazers[i].remove == false)) {
+        if (lazers[i].detectCollision(this.enemies[j])) {
+          var remainingLazers = lazers.slice(i + 1);
+          lazers[i].remove = true;
+          this.enemies[j].remove = true;
+          if (remainingLazers.length > 0) {
+            this.checkEnemyLazerCollision(remainingLazers);
+          } else {
+            return false;
+          }
+        }
+      }
+    }
+  }
+};
+
+// gets the furthest right, and left enemies on the board //
+Game.prototype.getEnemyMinAndMAx = function () {
+  var enemiesLength = this.enemies.length - 1;
+  var minXEnemy = this.enemies[enemiesLength];
+  var maxXEnemy = this.enemies[enemiesLength];
+  for (var i = enemiesLength; i >= 0; i--){
+    if (this.enemies[i].x < minXEnemy.x) minXEnemy = this.enemies[i];
+    if (this.enemies[i].x > maxXEnemy.x) maxXEnemy = this.enemies[i];
+  }
+  return { minXEnemy: minXEnemy, maxXEnemy: maxXEnemy }
+};
+
+// move enemies forward (down) and reverse the direction //
+Game.prototype.reverseEnemies = function () {
+  for (var i in this.enemies) {
+    this.enemies[i].y += 20;
+    this.enemies[i].reverseDirection();
+  }
+};
+
+// updates x and y values of enemies //
+Game.prototype.moveEnemies = function () {
+  var minMax = this.getEnemyMinAndMAx();
+  if (minMax.maxXEnemy && minMax.maxXEnemy.direction == 'right') {
+    if (minMax.maxXEnemy.x < (this.canvas.width - 100)) {
+      for (var i in this.enemies) {
+        if (this.enemies[i].frameCounter <= this.enemies.length) {
+          this.enemies[i].frameCounter++;
+        } else {
+          this.enemies[i].frameCounter = 0;
+          this.enemies[i].moveRight();
+          this.enemies[i].nextFrame();
+          this.sfx.invaderMarch.playSound = true;
+        }
+      }
+    } else {
+      this.reverseEnemies();
+    }
+  } else {
+    if (minMax.minXEnemy && minMax.minXEnemy.x > 50) {
+      for (var i in this.enemies) {
+        if (this.enemies[i].frameCounter <= this.enemies.length) {
+          this.enemies[i].frameCounter++;
+        } else {
+          this.enemies[i].frameCounter = 0;
+          this.enemies[i].moveLeft();
+          this.enemies[i].nextFrame();
+          this.sfx.invaderMarch.playSound = true;
+        }
+      }
+    } else {
+      this.reverseEnemies();
+    }
+  }
+};
+
+Game.prototype.attackShip = function () {
+  for (var i in this.attackingEnemies) {
+    var rand = Math.floor((Math.random() * 10) + 1) % 5;
+    if (this.attackingEnemies[i].missileDely <= 120) {
+      this.attackingEnemies[i].missileDely++;
+    } else {
+      if (rand === 0) {
+        this.attackingEnemies[i].fireMissle(this.sfx.shipDeath);
+      }
+      this.attackingEnemies[i].missileDely = 0;
+    }
+  }
+};
+
+// check for collisions between missiles and the ship //
+Game.prototype.checkShipMissleCollision = function () {
+  for (var i in this.attackingEnemies) {
+    for (var j in this.attackingEnemies[i].missiles) {
+      if (this.attackingEnemies[i].missiles[j].y >= this.ship.y && this.attackingEnemies[i].missiles[j].y > this.ship.y) {
+        if (this.attackingEnemies[i].missiles[j].detectCollision(this.ship)) {
+          this.attackingEnemies[i].missiles.splice(this.attackingEnemies[i].missiles.indexOf(this.attackingEnemies[i].missiles[j]), 1);
+          this.ship.remove = true;
+          if (this.ship.lives > 0) {
+            this.ship.loseLife();
+          }
+        }
+      }
+    }
+  }
+};
+
+// controls //
+Game.prototype.checkControls = function () {
+  var _this = this;
+  document.onkeydown = document.onkeyup = function(e){
+    e = e || event; // to deal with IE
+    _this.charMap[e.keyCode] = e.type == 'keydown';
+
+    if (_this.charMap[37] && _this.charMap[32] && _this.ship.x >= 50) {
+      _this.ship.moveLeft();
+      _this.ship.fireLazer(_this.sfx.enemyDeath);
+    } else if (_this.charMap[37] && _this.ship.x >= 50) {
+      _this.ship.moveLeft();
+    } else if (_this.charMap[39] && _this.charMap[32] && _this.ship.x <= (_this.canvas.width - 100)) {
+      _this.ship.moveRight();
+      _this.ship.fireLazer(_this.sfx.enemyDeath);
+    } else if (_this.charMap[39] && _this.ship.x <= (_this.canvas.width - 100)) {
+      _this.ship.moveRight();
+    } else if (_this.charMap[32]) {
+      _this.ship.fireLazer(_this.sfx.enemyDeath);
+    } else if (_this.charMap[77]) {
+      muteSounds(_this.sfx);
+    }
+  }
+};
+
+// update y value of lazers //
+Game.prototype.moveLazers = function () {
+  for (var i in this.ship.lazers) {
+    this.ship.lazers[i].y -= 5;
+    if (this.ship.lazers[i].y <= 0) {
+      this.ship.lazers.splice(this.ship.lazers.indexOf(this.ship.lazers[i]), 1);
+    }
+  }
+};
+
+// update y value of missiles //
+Game.prototype.moveMissles = function () {
+  for (var i in this.attackingEnemies) {
+    for (var j in this.attackingEnemies[i].missiles) {
+      this.attackingEnemies[i].missiles[j].y += 3;
+      if (this.attackingEnemies[i].missiles[j].y > this.canvas.height) {
+        this.attackingEnemies[i].missiles.splice(this.attackingEnemies[i].missiles.indexOf(this.attackingEnemies[i].missiles[j]), 1);
+      }
+    }
+  }
+};
+
+Game.prototype.updateSprites = function () {
+  if (this.ship.lazers.length > 0) {
+    this.checkEnemyLazerCollision(this.ship.lazers);
+  }
+  if (this.enemies.length > 0) {
+    this.moveEnemies();
+    if (this.sfx.invaderMarch.playSound) {
+      this.sfx.invaderMarch.sounds[this.sfx.invaderMarch.counter].play();
+      if (this.sfx.invaderMarch.counter == 3) {
+        this.sfx.invaderMarch.counter = 0;
+      } else {
+        this.sfx.invaderMarch.counter++;
+      }
+      this.sfx.invaderMarch.playSound = false;
+    }
+  };
+  if (this.attackingEnemies.length > 0) {
+    this.attackShip();
+    this.checkShipMissleCollision();
+  }
+  if (this.ship.disabled === false) {
+    this.checkControls();
+  }
+  this.moveLazers();
+  this.moveMissles();
+};
+
+var game = new Game("space");
+
+// Kick off main game loop
+main(game);
 
 function titleScreen () {
   var canvas = document.getElementById("space");
