@@ -514,3 +514,19 @@ function game () {
 
 // Let's play this game!
 game();
+
+function titleScreen () {
+  var canvas = document.getElementById("space");
+  var ctx = canvas.getContext("2d");
+  canvas.width = 800;
+  canvas.height = 600;
+
+  ctx.font = "60px Telegrama";
+  ctx.fillStyle = 'white';
+  ctx.fillText("SPACE INVADERS", 160, 200);
+  ctx.font = "20px Telegrama";
+
+  ctx.fillText("clone", 350, 250);
+}
+
+// titleScreen();
