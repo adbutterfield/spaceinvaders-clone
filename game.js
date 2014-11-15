@@ -164,11 +164,9 @@ Enemy.prototype.moveLeft = function () {
 function getEnemyMinAndMAx (enemies) {
   var minXEnemy = enemies[enemies.length - 1];
   var maxXEnemy = enemies[enemies.length - 1];
-  var temp;
   for (var i = enemies.length - 1; i >= 0; i--){
-    temp = enemies[i];
-    if (temp.x < minXEnemy.x) minXEnemy = temp;
-    if (temp.x > maxXEnemy.x) maxXEnemy = temp;
+    if (enemies[i].x < minXEnemy.x) minXEnemy = enemies[i];
+    if (enemies[i].x > maxXEnemy.x) maxXEnemy = enemies[i];
   }
   return { minXEnemy: minXEnemy, maxXEnemy: maxXEnemy }
 }
