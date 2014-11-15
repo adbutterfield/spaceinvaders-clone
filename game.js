@@ -93,9 +93,9 @@ Enemy.prototype.nextFrame = function () {
   }
 };
 
-Enemy.prototype.fireMissle = function (sfx) {
+Enemy.prototype.fireMissile = function (sfx) {
   this.sfx.play();
-  this.missiles[this.missiles.length] = new Missle(this.x + this.width/2 - 6, this.y + this.height - 5, sfx);
+  this.missiles[this.missiles.length] = new Missile(this.x + this.width/2 - 6, this.y + this.height - 5, sfx);
 };
 
 Enemy.prototype.moveRight = function () {
@@ -106,9 +106,9 @@ Enemy.prototype.moveLeft = function () {
   this.x -= 10;
 };
 
-/* Missle (for enemies) */
+/* Missile (for enemies) */
 // constructor //
-var Missle = function (x, y, sfx) {
+var Missile = function (x, y, sfx) {
   this.x = x;
   this.y = y;
   this.width = 10;
@@ -117,7 +117,7 @@ var Missle = function (x, y, sfx) {
   this.sfx = sfx;
 };
 
-Missle.prototype.detectCollision = function (object) {
+Missile.prototype.detectCollision = function (object) {
   if ((this.x >= object.x) && ((this.x + this.width) <= (object.x + object.width))) {
     this.sfx.play();
     return true;
@@ -136,7 +136,7 @@ var Game = function (canvas) {
   this.canvas.height = 600;
   // Load images
   this.images = this.imageLoader();
-  this.invaders = this.invaderImages();
+  this.invaderImages = this.getInvaderImages();
   // Load sounds
   this.sfx = this.soundLoader();
   // Create sprites
@@ -147,7 +147,7 @@ var Game = function (canvas) {
   this.charMap = [];
 };
 
-/* dependent methods for updateSprites */
+/* dependent methods for updateSprites() */
 // check for collisions between lazers and enemies //
 Game.prototype.checkEnemyLazerCollision = function (lazers) {
   for (var i in lazers) {
@@ -231,7 +231,7 @@ Game.prototype.attackShip = function () {
       this.attackingEnemies[i].missileDely++;
     } else {
       if (rand === 0) {
-        this.attackingEnemies[i].fireMissle(this.sfx.shipDeath);
+        this.attackingEnemies[i].fireMissile(this.sfx.shipDeath);
       }
       this.attackingEnemies[i].missileDely = 0;
     }
@@ -239,7 +239,7 @@ Game.prototype.attackShip = function () {
 };
 
 // check for collisions between missiles and the ship //
-Game.prototype.checkShipMissleCollision = function () {
+Game.prototype.checkShipMissileCollision = function () {
   for (var i in this.attackingEnemies) {
     for (var j in this.attackingEnemies[i].missiles) {
       if (this.attackingEnemies[i].missiles[j].y >= this.ship.y && this.attackingEnemies[i].missiles[j].y > this.ship.y) {
@@ -266,7 +266,7 @@ Game.prototype.moveLazers = function () {
 };
 
 // update y value of missiles //
-Game.prototype.moveMissles = function () {
+Game.prototype.moveMissiles = function () {
   for (var i in this.attackingEnemies) {
     for (var j in this.attackingEnemies[i].missiles) {
       this.attackingEnemies[i].missiles[j].y += 3;
@@ -295,16 +295,16 @@ Game.prototype.updateSprites = function () {
   };
   if (this.attackingEnemies.length > 0) {
     this.attackShip();
-    this.checkShipMissleCollision();
+    this.checkShipMissileCollision();
   }
   if (this.ship.disabled === false) {
     this.checkControls();
   }
   this.moveLazers();
-  this.moveMissles();
+  this.moveMissiles();
 };
 
-/* dependent method for drawSprites */
+/* dependent method for drawSprites() */
 Game.prototype.resetAttackingEnemy = function (enemy) {
   var atkEnmyIndex = this.attackingEnemies.indexOf(enemy);
   if (atkEnmyIndex !== -1){
@@ -422,7 +422,7 @@ Game.prototype.createEnemies = function () {
       } else {
         imageIndex = 2;
       }
-      enemies[c] = new Enemy(c, (j * 50) + 20, (i * 50) + 20, this.invaders[imageIndex], this.sfx.lazer);
+      enemies[c] = new Enemy(c, (j * 50) + 20, (i * 50) + 20, this.invaderImages[imageIndex], this.sfx.lazer);
       c++
     }
   }
@@ -430,14 +430,14 @@ Game.prototype.createEnemies = function () {
 };
 
 // pull the images for the invaders from the images object //
-Game.prototype.invaderImages = function () {
-  var invaders = [];
+Game.prototype.getInvaderImages = function () {
+  var invaderImages = [];
   for (var i in this.images.enemies) {
     if (this.images.enemies[i].constructor === Array) {
-      invaders.push(this.images.enemies[i])
+      invaderImages.push(this.images.enemies[i])
     }
   }
-  return invaders;
+  return invaderImages;
 };
 
 Game.prototype.getAttackingEnemies = function () {
