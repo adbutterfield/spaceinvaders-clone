@@ -106,51 +106,6 @@ Enemy.prototype.moveLeft = function () {
   this.x -= 10;
 };
 
-function createEnemies (images, sfx) {
-  var enemies = [];
-  // use another counter to save from using multi-dimensional array
-  var c = 0;
-  var imageIndex;
-  for (var i = 1; i < 6; i++) {
-    for (var j = 1; j < 12; j++) {
-      if (i == 1) {
-        imageIndex = 0;
-      } else if (i == 2 || i == 3){
-        imageIndex = 1;
-      } else {
-        imageIndex = 2;
-      }
-      enemies[c] = new Enemy(c, (j * 50) + 20, (i * 50) + 20, images[imageIndex], sfx);
-      c++
-    }
-  }
-  return enemies;
-};
-
-function getAttackingEnemies (enemies) {
-  return enemies.slice(enemies.length - enemies.length/5);
-};
-
-function resetAttackingEnemy (enemies, enemy, attackingEnemies) {
-  var atkEnmyIndex = attackingEnemies.indexOf(enemy);
-  if (atkEnmyIndex !== -1){
-    var column = enemies.filter(function(element){
-      return element.x === enemy.x;
-    });
-    var nextAttacker = enemies[enemies.indexOf(column[column.length - 2])];
-    // pass on missiles to another attacker if the enemy is destroyed, or else missiles would also be destroyed
-    if (enemy.missiles.length > 0) {
-      for (var i in enemy.missiles) {
-        attackingEnemies[attackingEnemies.length - 1].missiles.push(enemy.missiles[i]);
-      }
-    }
-    if (nextAttacker) {
-      attackingEnemies.push(nextAttacker);
-    }
-    attackingEnemies.splice(atkEnmyIndex, 1);
-  }
-};
-
 /* Missle (for enemies) */
 // constructor //
 var Missle = function (x, y, sfx) {
@@ -243,60 +198,29 @@ function soundLoader () {
   };
 };
 
-function drawSprites (ctx, canvas, ship, enemies, attackingEnemies, images) {
-  // clear the canvas on the start of each draw cycle
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  // draw ship
-  if (ship.remove) {
-    ctx.drawImage(images.shipExplode, ship.x, ship.y, ship.width, ship.height);
-  } else {
-    ctx.drawImage(images.ship, ship.x, ship.y, ship.width, ship.height);
-  }
-  // draw enemies
-  for (var i in enemies) {
-    if (enemies[i].remove) {
-      ctx.drawImage(images.enemies.death, enemies[i].x, enemies[i].y, 50, 35);
-      resetAttackingEnemy(enemies, enemies[i], attackingEnemies);
-      enemies.splice(i, 1);
-      ship.score += 10;
-    } else {
-      ctx.drawImage(enemies[i].sprites[enemies[i].frame], enemies[i].x, enemies[i].y, 50, 35);
-    }
-  }
-  // draw lazers
-  for (var i in ship.lazers) {
-    if (ship.lazers[i].remove) {
-        ship.lazers.splice(i, 1);
-    } else {
-      ctx.drawImage(images.lazer, ship.lazers[i].x, ship.lazers[i].y, 10, 20);
-    }
-  }
-  // draw enemy missiles
-  for (var i in attackingEnemies) {
-    for (var j in attackingEnemies[i].missiles) {
-      ctx.drawImage(images.lazer, attackingEnemies[i].missiles[j].x, attackingEnemies[i].missiles[j].y, 10, 20);
-    }
-  }
-  // draw text
-  ctx.font = "20px Telegrama";
-  ctx.fillStyle = 'white';
-  ctx.fillText("SCORE", 70, 43);
-  ctx.fillText("LIVES", 540, 43);
-  ctx.fillStyle = '#00FF00';
-  ctx.fillText(ship.score, 150, 43);
-  // draw lives
-  for (var i = 1; i <= ship.lives; i++) {
-    ctx.drawImage(images.ship, 580 + (40 * i), 20, ship.width/1.5, ship.height/1.5 );
-  }
+function getAttackingEnemies (enemies) {
+  return enemies.slice(enemies.length - enemies.length/5);
 };
 
-function gameOver (ctx) {
-  ctx.font = "80px Telegrama";
-  ctx.fillStyle = '#00FF00';
-  ctx.strokeStyle = 'black';
-  ctx.lineWidth = 8;
-  ctx.strokeText("GAME OVER", 160, 300);
-  ctx.fillText("GAME OVER", 160, 300);
+function createEnemies (images, sfx) {
+  var enemies = [];
+  // use another counter to save from using multi-dimensional array
+  var c = 0;
+  var imageIndex;
+  for (var i = 1; i < 6; i++) {
+    for (var j = 1; j < 12; j++) {
+      if (i == 1) {
+        imageIndex = 0;
+      } else if (i == 2 || i == 3){
+        imageIndex = 1;
+      } else {
+        imageIndex = 2;
+      }
+      enemies[c] = new Enemy(c, (j * 50) + 20, (i * 50) + 20, images[imageIndex], sfx);
+      c++
+    }
+  }
+  return enemies;
 };
 
 function muteSounds (sfx) {
@@ -319,12 +243,12 @@ function main (game) {
   } else {
     game.updateSprites();
   }
-  drawSprites(game.ctx, game.canvas, game.ship, game.enemies, game.attackingEnemies, game.images);
+  game.drawSprites();
   if (game.enemies.length == 0) {
     game.sfx.fanfare.play();
   }
   if (game.ship.lives == 0) {
-    gameOver(game.ctx);
+    game.gameOver();
     // window.cancelAnimationFrame(function(){
     //   main(ctx, canvas, game.ship, enemies, attackingEnemies, images, sfx);
     // });
@@ -356,6 +280,7 @@ var Game = function (canvas) {
   this.charMap = [];
 };
 
+/* dependent methods for updateSprites */
 // check for collisions between lazers and enemies //
 Game.prototype.checkEnemyLazerCollision = function (lazers) {
   for (var i in lazers) {
@@ -537,23 +462,101 @@ Game.prototype.updateSprites = function () {
   this.moveMissles();
 };
 
+/* dependent method for drawSprites */
+Game.prototype.resetAttackingEnemy = function (enemy) {
+  var atkEnmyIndex = this.attackingEnemies.indexOf(enemy);
+  if (atkEnmyIndex !== -1){
+    var column = this.enemies.filter(function(element){
+      return element.x === enemy.x;
+    });
+    var nextAttacker = this.enemies[this.enemies.indexOf(column[column.length - 2])];
+    // pass on missiles to another attacker if the enemy is destroyed, or else missiles would also be destroyed
+    if (enemy.missiles.length > 0) {
+      for (var i in enemy.missiles) {
+        this.attackingEnemies[this.attackingEnemies.length - 1].missiles.push(enemy.missiles[i]);
+      }
+    }
+    if (nextAttacker) {
+      this.attackingEnemies.push(nextAttacker);
+    }
+    this.attackingEnemies.splice(atkEnmyIndex, 1);
+  }
+};
+
+Game.prototype.drawSprites = function () {
+  // clear the canvas on the start of each draw cycle
+  this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  // draw ship
+  if (this.ship.remove) {
+    this.ctx.drawImage(this.images.shipExplode, this.ship.x, this.ship.y, this.ship.width, this.ship.height);
+  } else {
+    this.ctx.drawImage(this.images.ship, this.ship.x, this.ship.y, this.ship.width, this.ship.height);
+  }
+  // draw enemies
+  for (var i in this.enemies) {
+    if (this.enemies[i].remove) {
+      this.ctx.drawImage(this.images.enemies.death, this.enemies[i].x, this.enemies[i].y, 50, 35);
+      this.resetAttackingEnemy(this.enemies[i]);
+      this.enemies.splice(i, 1);
+      this.ship.score += 10;
+    } else {
+      this.ctx.drawImage(this.enemies[i].sprites[this.enemies[i].frame], this.enemies[i].x, this.enemies[i].y, 50, 35);
+    }
+  }
+  // draw lazers
+  for (var i in this.ship.lazers) {
+    if (this.ship.lazers[i].remove) {
+        this.ship.lazers.splice(i, 1);
+    } else {
+      this.ctx.drawImage(this.images.lazer, this.ship.lazers[i].x, this.ship.lazers[i].y, 10, 20);
+    }
+  }
+  // draw enemy missiles
+  for (var i in this.attackingEnemies) {
+    for (var j in this.attackingEnemies[i].missiles) {
+      this.ctx.drawImage(this.images.lazer, this.attackingEnemies[i].missiles[j].x, this.attackingEnemies[i].missiles[j].y, 10, 20);
+    }
+  }
+  // draw text
+  this.ctx.font = "20px Telegrama";
+  this.ctx.fillStyle = 'white';
+  this.ctx.fillText("SCORE", 70, 43);
+  this.ctx.fillText("LIVES", 540, 43);
+  this.ctx.fillStyle = '#00FF00';
+  this.ctx.fillText(this.ship.score, 150, 43);
+  // draw lives
+  for (var i = 1; i <= this.ship.lives; i++) {
+    this.ctx.drawImage(this.images.ship, 580 + (40 * i), 20, this.ship.width/1.5, this.ship.height/1.5 );
+  }
+};
+
+Game.prototype.gameOver = function () {
+  this.ship.disabled = true;
+  this.ctx.font = "80px Telegrama";
+  this.ctx.fillStyle = '#00FF00';
+  this.ctx.strokeStyle = 'black';
+  this.ctx.lineWidth = 8;
+  this.ctx.strokeText("GAME OVER", 160, 300);
+  this.ctx.fillText("GAME OVER", 160, 300);
+};
+
 var game = new Game("space");
 
 // Kick off main game loop
 main(game);
 
-function titleScreen () {
-  var canvas = document.getElementById("space");
-  var ctx = canvas.getContext("2d");
-  canvas.width = 800;
-  canvas.height = 600;
+// function titleScreen () {
+//   var this.canvas = document.getElementById("space");
+//   var ctx = this.canvas.getContext("2d");
+//   this.canvas.width = 800;
+//   this.canvas.height = 600;
 
-  ctx.font = "60px Telegrama";
-  ctx.fillStyle = 'white';
-  ctx.fillText("SPACE INVADERS", 160, 200);
-  ctx.font = "20px Telegrama";
+//   ctx.font = "60px Telegrama";
+//   ctx.fillStyle = 'white';
+//   ctx.fillText("SPACE INVADERS", 160, 200);
+//   ctx.font = "20px Telegrama";
 
-  ctx.fillText("clone", 350, 250);
-};
+//   ctx.fillText("clone", 350, 250);
+// };
 
 // titleScreen();
