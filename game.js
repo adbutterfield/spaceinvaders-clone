@@ -16,7 +16,7 @@ var Ship = function (sfx) {
 }
 
 Ship.prototype.fireLazer = function (sfx) {
-  if (this.lazers.length === 0 || (this.lazers[this.lazers.length - 1] && this.lazers[this.lazers.length - 1].y < 300)) {
+  if ((this.lazers.length === 0 || (this.lazers[this.lazers.length - 1] && this.lazers[this.lazers.length - 1].y < 300)) && this.disabled == false) {
     this.sfx.play();
     this.lazers[this.lazers.length] = new Lazer(this.x + this.width/2 - 6, sfx);
   }
@@ -30,11 +30,15 @@ Ship.prototype.loseLife = function () {
 };
 
 Ship.prototype.moveRight = function () {
-  this.x += 10;
+  if (this.disabled == false) {
+    this.x += 10;
+  }
 };
 
 Ship.prototype.moveLeft = function () {
-  this.x -= 10;
+  if (this.disabled == false) {
+    this.x -= 10;
+  }
 };
 
 Ship.prototype.victoryDance = function () {
@@ -162,6 +166,7 @@ var Game = function (canvas) {
   this.attackingEnemies = this.getAttackingEnemies();
   // Char map
   this.charMap = [];
+  this.newGame = true;
 };
 
 /* dependent methods for updateSprites() */
@@ -340,6 +345,7 @@ Game.prototype.resetAttackingEnemy = function (enemy) {
 Game.prototype.drawSprites = function () {
   // clear the canvas on the start of each draw cycle
   this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
   // draw ship
   if (this.ship.remove) {
     this.ctx.drawImage(this.images.shipExplode, this.ship.x, this.ship.y, this.ship.width, this.ship.height);
@@ -372,6 +378,7 @@ Game.prototype.drawSprites = function () {
     }
   }
   // draw text
+  this.ctx.textAlign = 'start';
   this.ctx.font = "20px Telegrama";
   this.ctx.fillStyle = 'white';
   this.ctx.fillText("SCORE", 70, 43);
@@ -409,8 +416,19 @@ Game.prototype.moveShip = function () {
   }
 };
 
+Game.prototype.resetGame = function () {
+  this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  this.newGame = true;
+  this.ship = new Ship(this.sfx.lazer);
+  this.enemies = this.createEnemies();
+  this.attackingEnemies = this.getAttackingEnemies();
+}
+
 Game.prototype.gameOver = function () {
+  this.updateSprites();
+  this.drawSprites();
   this.ship.disabled = true;
+  this.ctx.textAlign = 'start';
   this.ctx.font = "80px Telegrama";
   this.ctx.fillStyle = '#00FF00';
   this.ctx.strokeStyle = 'black';
@@ -526,35 +544,94 @@ Game.prototype.muteSounds = function () {
 };
 
 Game.prototype.youWin = function () {
+  game.updateSprites();
+  game.drawSprites();
+  this.ship.disabled = true;
   this.sfx.fanfare.play();
+  this.ctx.textAlign = 'start';
   this.ctx.font = "60px Telegrama";
   this.ctx.fillStyle = 'white';
   this.ctx.fillText("YOU WIN!", 230, 200);
   this.ship.victoryDance();
-  // setInterval(function(){this.ship.victoryDance}, 500);
 }
+
+Game.prototype.titleScreen = function () {
+  var ctx = this.ctx
+  var x = this.canvas.width / 2;
+  var y = this.canvas.height / 2;
+  ctx.textAlign = 'center';
+  setTimeout(function(){
+    ctx.font = "60px Telegrama";
+    ctx.fillStyle = 'white';
+    ctx.fillText("SPACE INVADERS", x - 30, 150);
+    ctx.font = "20px Telegrama";
+    ctx.fillText("clone", x + 300, 150);
+    setTimeout(function(){
+      ctx.font = "20px Telegrama";
+      ctx.fillStyle = 'white';
+      ctx.fillText("How to play:", x, 230);
+      setTimeout(function(){
+        ctx.font = "20px Telegrama";
+        ctx.fillStyle = 'white';
+        ctx.fillText("Move: <- ->", x + 30, 260);
+        setTimeout(function(){
+          ctx.font = "20px Telegrama";
+          ctx.fillStyle = 'white';
+          ctx.fillText("Shoot: Space", x + 37, 290);
+          setTimeout(function(){
+            ctx.font = "20px Telegrama";
+            ctx.fillStyle = 'white';
+            ctx.fillText("Mute: M", x + 4, 320);
+            setTimeout(function(){
+              ctx.font = "40px Telegrama";
+              ctx.fillStyle = 'white';
+              ctx.fillText("Start", x, 400);
+              setTimeout(function(){
+                ctx.font = "30px Telegrama";
+                ctx.fillStyle = 'white';
+                ctx.fillText("Press Enter", x, 440);
+              }, 500);
+            }, 500);
+          }, 500);
+        }, 500);
+      }, 500);
+    }, 500);
+  }, 500);
+  var _this = this;
+  document.onkeydown = function (e) {
+    if (e.keyCode == 13) {
+      _this.newGame = false;
+    }
+  }
+};
 
 /* The main game loop */
 function main (game) {
   // Update the position of sprites
-  if (game.ship.remove == true && game.ship.lives != 0) {
-    setTimeout(function(){
-      game.ship.remove = false;
-      game.ship.disabled = false;
-    }, 2000);
+  if (game.newGame) {
+    game.titleScreen();
   } else {
-    game.updateSprites();
+    if (game.ship.remove == true && game.ship.lives != 0) {
+      setTimeout(function(){
+        game.ship.remove = false;
+        game.ship.disabled = false;
+      }, 2000);
+    } else if (game.enemies.length == 0) {
+      game.youWin();
+      setTimeout(function(){
+        game.resetGame();
+      }, 20000);
+    } else if (game.ship.lives == 0) {
+      game.gameOver();
+      setTimeout(function(){
+        game.resetGame();
+      }, 5000);
+    } else {
+      game.updateSprites();
+      game.drawSprites();
+    }
   }
-  game.drawSprites();
-  if (game.enemies.length == 0) {
-    game.youWin();
-  }
-  if (game.ship.lives == 0) {
-    game.gameOver();
-    // window.cancelAnimationFrame(function(){
-    //   main(ctx, canvas, game.ship, enemies, attackingEnemies, images, sfx);
-    // });
-  }
+
   // Run main again on next animation frame
   requestAnimationFrame(function(){
     main(game);
@@ -565,19 +642,3 @@ var game = new Game("space");
 
 // Kick off main game loop
 main(game);
-
-// function titleScreen () {
-//   var this.canvas = document.getElementById("space");
-//   var ctx = this.canvas.getContext("2d");
-//   this.canvas.width = 800;
-//   this.canvas.height = 600;
-
-//   ctx.font = "60px Telegrama";
-//   ctx.fillStyle = 'white';
-//   ctx.fillText("SPACE INVADERS", 160, 200);
-//   ctx.font = "20px Telegrama";
-
-//   ctx.fillText("clone", 350, 250);
-// };
-
-// titleScreen();
