@@ -560,36 +560,37 @@ Game.prototype.titleScreen = function () {
   var x = this.canvas.width / 2;
   var y = this.canvas.height / 2;
   ctx.textAlign = 'center';
+  var _this = this;
   setTimeout(function(){
-    ctx.font = "60px Telegrama";
-    ctx.fillStyle = 'white';
-    ctx.fillText("SPACE INVADERS", x - 30, 150);
-    ctx.font = "20px Telegrama";
-    ctx.fillText("clone", x + 300, 150);
+    _this.ctx.font = "60px Telegrama";
+    _this.ctx.fillStyle = 'white';
+    _this.ctx.fillText("SPACE INVADERS", x - 30, 150);
+    _this.ctx.font = "20px Telegrama";
+    _this.ctx.fillText("clone", x + 300, 150);
     setTimeout(function(){
-      ctx.font = "20px Telegrama";
-      ctx.fillStyle = 'white';
-      ctx.fillText("How to play:", x, 230);
+      _this.ctx.font = "20px Telegrama";
+      _this.ctx.fillStyle = 'white';
+      _this.ctx.fillText("How to play:", x, 230);
       setTimeout(function(){
-        ctx.font = "20px Telegrama";
-        ctx.fillStyle = 'white';
-        ctx.fillText("Move: <- ->", x + 30, 260);
+        _this.ctx.font = "20px Telegrama";
+        _this.ctx.fillStyle = 'white';
+        _this.ctx.fillText("Move: <- ->", x + 30, 260);
         setTimeout(function(){
-          ctx.font = "20px Telegrama";
-          ctx.fillStyle = 'white';
-          ctx.fillText("Shoot: Space", x + 37, 290);
+          _this.ctx.font = "20px Telegrama";
+          _this.ctx.fillStyle = 'white';
+          _this.ctx.fillText("Shoot: Space", x + 37, 290);
           setTimeout(function(){
-            ctx.font = "20px Telegrama";
-            ctx.fillStyle = 'white';
-            ctx.fillText("Mute: M", x + 4, 320);
+            _this.ctx.font = "20px Telegrama";
+            _this.ctx.fillStyle = 'white';
+            _this.ctx.fillText("Mute: M", x + 4, 320);
             setTimeout(function(){
-              ctx.font = "40px Telegrama";
-              ctx.fillStyle = 'white';
-              ctx.fillText("Start", x, 400);
+              _this.ctx.font = "40px Telegrama";
+              _this.ctx.fillStyle = 'white';
+              _this.ctx.fillText("Start", x, 400);
               setTimeout(function(){
-                ctx.font = "30px Telegrama";
-                ctx.fillStyle = 'white';
-                ctx.fillText("Press Enter", x, 440);
+                _this.ctx.font = "30px Telegrama";
+                _this.ctx.fillStyle = 'white';
+                _this.ctx.fillText("Press Enter", x, 440);
               }, 500);
             }, 500);
           }, 500);
@@ -620,18 +621,17 @@ function main (game) {
       game.youWin();
       setTimeout(function(){
         game.resetGame();
-      }, 20000);
+      }, 21000);
     } else if (game.ship.lives == 0) {
       game.gameOver();
       setTimeout(function(){
         game.resetGame();
-      }, 5000);
+      }, 6000);
     } else {
       game.updateSprites();
       game.drawSprites();
     }
   }
-
   // Run main again on next animation frame
   requestAnimationFrame(function(){
     main(game);
