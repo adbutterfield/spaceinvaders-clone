@@ -25,3 +25,7 @@
   font-family: 'Telegrama';
   src: url("fonts/telegrama_raw.otf") format("opentype");
 }
+
+body {
+  font-family: 'Telegrama';
+}
