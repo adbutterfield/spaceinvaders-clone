@@ -37,6 +37,23 @@ Ship.prototype.moveLeft = function () {
   this.x -= 10;
 };
 
+Ship.prototype.victoryDance = function () {
+  this.disabled = true;
+  this.direction = (this.direction == undefined || this.direction == "left") ? "right" : "left"
+  this.moveCounter = (this.moveCounter == undefined ? 0 : this.moveCounter);
+  if (this.moveCounter == 20) {
+    if (this.direction == "left") {
+      this.x -= 7;
+      this.moveCounter = 0;
+    } else {
+      this.x += 7;
+      this.moveCounter = 0;
+    }
+  } else {
+    this.moveCounter++;
+  }
+}
+
 /* Lazer (for ship) */
 // constructor //
 var Lazer = function (x, sfx) {
@@ -374,7 +391,6 @@ Game.prototype.moveShip = function () {
   document.onkeydown = document.onkeyup = function(e){
     e = e || event; // to deal with IE
     _this.charMap[e.keyCode] = e.type == 'keydown';
-    console.log(_this.charMap)
     if (_this.charMap[37] && _this.charMap[32] && _this.ship.x >= 50) {
       _this.ship.moveLeft();
       _this.ship.fireLazer(_this.sfx.enemyDeath);
@@ -509,6 +525,15 @@ Game.prototype.muteSounds = function () {
   }
 };
 
+Game.prototype.youWin = function () {
+  this.sfx.fanfare.play();
+  this.ctx.font = "60px Telegrama";
+  this.ctx.fillStyle = 'white';
+  this.ctx.fillText("YOU WIN!", 230, 200);
+  this.ship.victoryDance();
+  // setInterval(function(){this.ship.victoryDance}, 500);
+}
+
 /* The main game loop */
 function main (game) {
   // Update the position of sprites
@@ -522,7 +547,7 @@ function main (game) {
   }
   game.drawSprites();
   if (game.enemies.length == 0) {
-    game.sfx.fanfare.play();
+    game.youWin();
   }
   if (game.ship.lives == 0) {
     game.gameOver();
