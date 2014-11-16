@@ -188,36 +188,31 @@ Game.prototype.reverseEnemies = function () {
   }
 };
 
+Game.prototype.moveOneStep = function (callback) {
+  for (var i in this.enemies) {
+    if (this.enemies[i].frameCounter <= this.enemies.length) {
+      this.enemies[i].frameCounter++;
+    } else {
+      this.enemies[i].frameCounter = 0;
+      callback.call(this.enemies[i]);
+      this.enemies[i].nextFrame();
+      this.sfx.invaderMarch.playSound = true;
+    }
+  }
+}
+
 // updates x and y values of enemies //
 Game.prototype.moveEnemies = function () {
   var minMax = this.getEnemyMinAndMAx();
   if (minMax.maxXEnemy && minMax.maxXEnemy.direction == 'right') {
-    if (minMax.maxXEnemy.x < (this.canvas.width - 100)) {
-      for (var i in this.enemies) {
-        if (this.enemies[i].frameCounter <= this.enemies.length) {
-          this.enemies[i].frameCounter++;
-        } else {
-          this.enemies[i].frameCounter = 0;
-          this.enemies[i].moveRight();
-          this.enemies[i].nextFrame();
-          this.sfx.invaderMarch.playSound = true;
-        }
-      }
+    if (minMax.maxXEnemy.x <= (this.canvas.width - 100)) {
+      this.moveOneStep(Enemy.prototype.moveRight);
     } else {
       this.reverseEnemies();
     }
   } else {
-    if (minMax.minXEnemy && minMax.minXEnemy.x > 50) {
-      for (var i in this.enemies) {
-        if (this.enemies[i].frameCounter <= this.enemies.length) {
-          this.enemies[i].frameCounter++;
-        } else {
-          this.enemies[i].frameCounter = 0;
-          this.enemies[i].moveLeft();
-          this.enemies[i].nextFrame();
-          this.sfx.invaderMarch.playSound = true;
-        }
-      }
+    if (minMax.minXEnemy && minMax.minXEnemy.x >= 50) {
+      this.moveOneStep(Enemy.prototype.moveLeft);
     } else {
       this.reverseEnemies();
     }
@@ -298,7 +293,7 @@ Game.prototype.updateSprites = function () {
     this.checkShipMissileCollision();
   }
   if (this.ship.disabled === false) {
-    this.checkControls();
+    this.moveShip();
   }
   this.moveLazers();
   this.moveMissiles();
@@ -374,12 +369,12 @@ Game.prototype.drawSprites = function () {
 
 /* game utilities */
 // controls //
-Game.prototype.checkControls = function () {
+Game.prototype.moveShip = function () {
   var _this = this;
   document.onkeydown = document.onkeyup = function(e){
     e = e || event; // to deal with IE
     _this.charMap[e.keyCode] = e.type == 'keydown';
-
+    console.log(_this.charMap)
     if (_this.charMap[37] && _this.charMap[32] && _this.ship.x >= 50) {
       _this.ship.moveLeft();
       _this.ship.fireLazer(_this.sfx.enemyDeath);
