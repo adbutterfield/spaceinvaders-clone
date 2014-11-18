@@ -1,0 +1,11 @@
+{
+  "name": "space-invaders-clone",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node ./server.js"
+  },
+  "dependencies": {
+    "express": "~4.2.0"
+  }
+}
