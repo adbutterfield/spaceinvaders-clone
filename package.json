@@ -1,9 +1,12 @@
 {
   "name": "space-invaders-clone",
   "version": "0.0.1",
+  "engines": {
+    "node": "0.10.x"
+  },
   "private": true,
   "scripts": {
-    "start": "node ./server.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "express": "~4.2.0"
