@@ -435,6 +435,13 @@ Game.prototype.gameOver = function () {
   this.ctx.lineWidth = 8;
   this.ctx.strokeText("GAME OVER", 160, 300);
   this.ctx.fillText("GAME OVER", 160, 300);
+  this.ctx.fillStyle = '';
+  this.ctx.font = "20px Telegrama";
+  this.ctx.fillStyle = 'white';
+  this.ctx.fillText("RESTART", 355, 340);
+  this.ctx.font = "40px Telegrama";
+  this.ctx.fillStyle = 'white';
+  this.ctx.fillText("PRESS ENTER", 255, 390);
 };
 
 Game.prototype.createEnemies = function () {
@@ -553,51 +560,57 @@ Game.prototype.youWin = function () {
   this.ctx.fillStyle = 'white';
   this.ctx.fillText("YOU WIN!", 230, 200);
   this.ship.victoryDance();
+  this.ctx.fillStyle = '';
+  this.ctx.font = "20px Telegrama";
+  this.ctx.fillStyle = 'white';
+  this.ctx.fillText("RESTART", 355, 340);
+  this.ctx.font = "40px Telegrama";
+  this.ctx.fillStyle = 'white';
+  this.ctx.fillText("PRESS ENTER", 255, 390);
 }
 
 Game.prototype.titleScreen = function () {
-  var ctx = this.ctx
   var x = this.canvas.width / 2;
   var y = this.canvas.height / 2;
-  ctx.textAlign = 'center';
+  this.ctx.textAlign = 'center';
   var _this = this;
-  setTimeout(function(){
+  // setTimeout(function(){
     _this.ctx.font = "60px Telegrama";
     _this.ctx.fillStyle = 'white';
     _this.ctx.fillText("SPACE INVADERS", x - 30, 150);
     _this.ctx.font = "20px Telegrama";
     _this.ctx.fillText("clone", x + 300, 150);
-    setTimeout(function(){
+    // setTimeout(function(){
       _this.ctx.font = "20px Telegrama";
       _this.ctx.fillStyle = 'white';
       _this.ctx.fillText("How to play:", x, 230);
-      setTimeout(function(){
+      // setTimeout(function(){
         _this.ctx.font = "20px Telegrama";
         _this.ctx.fillStyle = 'white';
         _this.ctx.fillText("Move: <- ->", x + 30, 260);
-        setTimeout(function(){
+        // setTimeout(function(){
           _this.ctx.font = "20px Telegrama";
           _this.ctx.fillStyle = 'white';
           _this.ctx.fillText("Shoot: Space", x + 37, 290);
-          setTimeout(function(){
+          // setTimeout(function(){
             _this.ctx.font = "20px Telegrama";
             _this.ctx.fillStyle = 'white';
             _this.ctx.fillText("Mute: M", x + 4, 320);
-            setTimeout(function(){
+            // setTimeout(function(){
               _this.ctx.font = "40px Telegrama";
               _this.ctx.fillStyle = 'white';
               _this.ctx.fillText("Start", x, 400);
-              setTimeout(function(){
+              // setTimeout(function(){
                 _this.ctx.font = "30px Telegrama";
                 _this.ctx.fillStyle = 'white';
                 _this.ctx.fillText("Press Enter", x, 440);
-              }, 500);
-            }, 500);
-          }, 500);
-        }, 500);
-      }, 500);
-    }, 500);
-  }, 500);
+  //             }, 500);
+  //           }, 500);
+  //         }, 500);
+  //       }, 500);
+  //     }, 500);
+  //   }, 500);
+  // }, 500);
   var _this = this;
   document.onkeydown = function (e) {
     if (e.keyCode == 13) {
@@ -608,32 +621,41 @@ Game.prototype.titleScreen = function () {
 
 /* The main game loop */
 function main (game) {
-  // Update the position of sprites
+  // load the title screen for a new game
   if (game.newGame) {
-    game.titleScreen();
+    var tm = setTimeout(function(){
+      game.titleScreen();
+    }, 1000);
   } else {
+    // if the ship has been hit, but the game isn't over
     if (game.ship.remove == true && game.ship.lives != 0) {
-      setTimeout(function(){
+      var tm = setTimeout(function(){
         game.ship.remove = false;
         game.ship.disabled = false;
+        clearTimeout(tm);
       }, 2000);
+      // if you destroy all the enemies
     } else if (game.enemies.length == 0) {
       game.youWin();
-      setTimeout(function(){
-        game.resetGame();
-      }, 21000);
+      // if you lose all your lives
     } else if (game.ship.lives == 0) {
       game.gameOver();
-      setTimeout(function(){
-        game.resetGame();
-      }, 6000);
     } else {
+      // update x and y position of sprites and draw
       game.updateSprites();
       game.drawSprites();
     }
   }
+
+  if (game.ship.lives == 0 || game.enemies.length == 0) {
+    document.onkeydown = function (e) {
+      if (e.keyCode == 13) {
+        game.resetGame();
+      }
+    }
+  }
   // Run main again on next animation frame
-  requestAnimationFrame(function(){
+  game.requestID = requestAnimationFrame(function(){
     main(game);
   });
 };
