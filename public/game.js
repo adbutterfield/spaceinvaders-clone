@@ -620,7 +620,7 @@ Game.prototype.setTimeout = function (delay, callback) {
 function main (game) {
   // load the title screen for a new game
   if (game.newGame) {
-    game.titleScreen();
+    game.setTimeout(1000, game.titleScreen)
   } else {
     // if the ship has been hit, but the game isn't over
     if (game.ship.remove == true && game.ship.lives != 0) {
