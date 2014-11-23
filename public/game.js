@@ -166,6 +166,7 @@ var Game = function (canvas) {
   this.attackingEnemies = this.getAttackingEnemies();
   // Char map
   this.charMap = [];
+  this.timeOut = null;
   this.newGame = true;
 };
 
@@ -435,13 +436,6 @@ Game.prototype.gameOver = function () {
   this.ctx.lineWidth = 8;
   this.ctx.strokeText("GAME OVER", 160, 300);
   this.ctx.fillText("GAME OVER", 160, 300);
-  this.ctx.fillStyle = '';
-  this.ctx.font = "20px Telegrama";
-  this.ctx.fillStyle = 'white';
-  this.ctx.fillText("RESTART", 355, 340);
-  this.ctx.font = "40px Telegrama";
-  this.ctx.fillStyle = 'white';
-  this.ctx.fillText("PRESS ENTER", 255, 390);
 };
 
 Game.prototype.createEnemies = function () {
@@ -560,14 +554,7 @@ Game.prototype.youWin = function () {
   this.ctx.fillStyle = 'white';
   this.ctx.fillText("YOU WIN!", 230, 200);
   this.ship.victoryDance();
-  this.ctx.fillStyle = '';
-  this.ctx.font = "20px Telegrama";
-  this.ctx.fillStyle = 'white';
-  this.ctx.fillText("RESTART", 355, 340);
-  this.ctx.font = "40px Telegrama";
-  this.ctx.fillStyle = 'white';
-  this.ctx.fillText("PRESS ENTER", 255, 390);
-}
+};
 
 Game.prototype.titleScreen = function () {
   var x = this.canvas.width / 2;
@@ -619,27 +606,37 @@ Game.prototype.titleScreen = function () {
   }
 };
 
+Game.prototype.setTimeout = function (delay, callback) {
+  if (!this.timeOut) {
+    this.timeOut = (new Date()).getTime() + delay;
+  }
+  if (this.timeOut <= (new Date()).getTime()) {
+    callback.call(this);
+    this.timeOut = null;
+  }
+};
+
 /* The main game loop */
 function main (game) {
   // load the title screen for a new game
   if (game.newGame) {
-    var tm = setTimeout(function(){
-      game.titleScreen();
-    }, 1000);
+    game.titleScreen();
   } else {
     // if the ship has been hit, but the game isn't over
     if (game.ship.remove == true && game.ship.lives != 0) {
-      var tm = setTimeout(function(){
+      game.setTimeout(2000, function(){
         game.ship.remove = false;
         game.ship.disabled = false;
-        clearTimeout(tm);
-      }, 2000);
+      });
+
       // if you destroy all the enemies
     } else if (game.enemies.length == 0) {
       game.youWin();
+      game.setTimeout(21000, game.resetGame);
       // if you lose all your lives
     } else if (game.ship.lives == 0) {
       game.gameOver();
+      game.setTimeout(6000, game.resetGame);
     } else {
       // update x and y position of sprites and draw
       game.updateSprites();
@@ -647,13 +644,13 @@ function main (game) {
     }
   }
 
-  if (game.ship.lives == 0 || game.enemies.length == 0) {
-    document.onkeydown = function (e) {
-      if (e.keyCode == 13) {
-        game.resetGame();
-      }
-    }
-  }
+  // if (game.ship.lives == 0 || game.enemies.length == 0) {
+  //   document.onkeydown = function (e) {
+  //     if (e.keyCode == 13) {
+  //       game.resetGame();
+  //     }
+  //   }
+  // }
   // Run main again on next animation frame
   game.requestID = requestAnimationFrame(function(){
     main(game);
