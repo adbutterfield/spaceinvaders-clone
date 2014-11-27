@@ -560,44 +560,31 @@ Game.prototype.titleScreen = function () {
   var x = this.canvas.width / 2;
   var y = this.canvas.height / 2;
   this.ctx.textAlign = 'center';
-  var _this = this;
-  // setTimeout(function(){
-    _this.ctx.font = "60px Telegrama";
-    _this.ctx.fillStyle = 'white';
-    _this.ctx.fillText("SPACE INVADERS", x - 30, 150);
-    _this.ctx.font = "20px Telegrama";
-    _this.ctx.fillText("clone", x + 300, 150);
-    // setTimeout(function(){
-      _this.ctx.font = "20px Telegrama";
-      _this.ctx.fillStyle = 'white';
-      _this.ctx.fillText("How to play:", x, 230);
-      // setTimeout(function(){
-        _this.ctx.font = "20px Telegrama";
-        _this.ctx.fillStyle = 'white';
-        _this.ctx.fillText("Move: <- ->", x + 30, 260);
-        // setTimeout(function(){
-          _this.ctx.font = "20px Telegrama";
-          _this.ctx.fillStyle = 'white';
-          _this.ctx.fillText("Shoot: Space", x + 37, 290);
-          // setTimeout(function(){
-            _this.ctx.font = "20px Telegrama";
-            _this.ctx.fillStyle = 'white';
-            _this.ctx.fillText("Mute: M", x + 4, 320);
-            // setTimeout(function(){
-              _this.ctx.font = "40px Telegrama";
-              _this.ctx.fillStyle = 'white';
-              _this.ctx.fillText("Start", x, 400);
-              // setTimeout(function(){
-                _this.ctx.font = "30px Telegrama";
-                _this.ctx.fillStyle = 'white';
-                _this.ctx.fillText("Press Enter", x, 440);
-  //             }, 500);
-  //           }, 500);
-  //         }, 500);
-  //       }, 500);
-  //     }, 500);
-  //   }, 500);
-  // }, 500);
+
+  this.ctx.font = "60px Telegrama";
+  this.ctx.fillStyle = 'white';
+  this.ctx.fillText("SPACE INVADERS", x - 30, 150);
+  this.ctx.font = "20px Telegrama";
+  this.ctx.fillText("clone", x + 300, 150);
+
+  this.ctx.font = "20px Telegrama";
+  this.ctx.fillStyle = 'white';
+  this.ctx.fillText("How to play:", x, 230);
+
+  this.ctx.fillText("Move: <- ->", x + 30, 260);
+
+  this.ctx.fillText("Shoot: Space", x + 37, 290);
+
+  this.ctx.fillText("Mute: M", x + 4, 320);
+
+  this.ctx.font = "40px Telegrama";
+  this.ctx.fillStyle = 'white';
+  this.ctx.fillText("Start", x, 400);
+
+  this.ctx.font = "30px Telegrama";
+  this.ctx.fillStyle = 'white';
+  this.ctx.fillText("Press Enter", x, 440);
+
   var _this = this;
   document.onkeydown = function (e) {
     if (e.keyCode == 13) {
@@ -628,7 +615,6 @@ function main (game) {
         game.ship.remove = false;
         game.ship.disabled = false;
       });
-
       // if you destroy all the enemies
     } else if (game.enemies.length == 0) {
       game.youWin();
