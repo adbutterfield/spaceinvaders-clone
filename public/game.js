@@ -426,8 +426,7 @@ Game.prototype.resetGame = function () {
 }
 
 Game.prototype.gameOver = function () {
-  this.updateSprites();
-  this.drawSprites();
+  this.run();
   this.ship.disabled = true;
   this.ctx.textAlign = 'start';
   this.ctx.font = "80px Telegrama";
@@ -545,8 +544,7 @@ Game.prototype.muteSounds = function () {
 };
 
 Game.prototype.youWin = function () {
-  game.updateSprites();
-  game.drawSprites();
+  this.run();
   this.ship.disabled = true;
   this.sfx.fanfare.play();
   this.ctx.textAlign = 'start';
@@ -568,21 +566,15 @@ Game.prototype.titleScreen = function () {
   this.ctx.fillText("clone", x + 300, 150);
 
   this.ctx.font = "20px Telegrama";
-  this.ctx.fillStyle = 'white';
   this.ctx.fillText("How to play:", x, 230);
-
   this.ctx.fillText("Move: <- ->", x + 30, 260);
-
   this.ctx.fillText("Shoot: Space", x + 37, 290);
-
   this.ctx.fillText("Mute: M", x + 4, 320);
 
   this.ctx.font = "40px Telegrama";
-  this.ctx.fillStyle = 'white';
   this.ctx.fillText("Start", x, 400);
 
   this.ctx.font = "30px Telegrama";
-  this.ctx.fillStyle = 'white';
   this.ctx.fillText("Press Enter", x, 440);
 
   var _this = this;
@@ -602,6 +594,11 @@ Game.prototype.setTimeout = function (delay, callback) {
     this.timeOut = null;
   }
 };
+
+Game.prototype.run = function () {
+  this.updateSprites();
+  this.drawSprites();
+}
 
 /* The main game loop */
 function main (game) {
@@ -625,8 +622,7 @@ function main (game) {
       game.setTimeout(6000, game.resetGame);
     } else {
       // update x and y position of sprites and draw
-      game.updateSprites();
-      game.drawSprites();
+      game.run();
     }
   }
 
