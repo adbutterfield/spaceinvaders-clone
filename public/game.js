@@ -443,7 +443,7 @@ Game.prototype.createEnemies = function () {
   var c = 0;
   var imageIndex;
   for (var i = 1; i < 6; i++) {
-    for (var j = 1; j < 12; j++) {
+    for (var j = 1; j < 11; j++) {
       if (i == 1) {
         imageIndex = 0;
       } else if (i == 2 || i == 3){
@@ -575,7 +575,7 @@ Game.prototype.titleScreen = function () {
   this.ctx.fillText("Start", x, 400);
 
   this.ctx.font = "30px Telegrama";
-  this.ctx.fillText("Press Enter", x, 440);
+  this.ctx.fillText("PRESS ENTER", x, 440);
 
   var _this = this;
   document.onkeydown = function (e) {
@@ -600,11 +600,17 @@ Game.prototype.run = function () {
   this.drawSprites();
 }
 
+Game.prototype.loadReplayText = function () {
+  this.ctx.font = "20px Telegrama";
+  this.ctx.fillStyle = 'white';
+  this.ctx.fillText("PRESS ENTER TO PLAY AGAIN", 220, 400);
+}
+
 /* The main game loop */
 function main (game) {
   // load the title screen for a new game
   if (game.newGame) {
-    game.setTimeout(1000, game.titleScreen)
+    game.titleScreen();
   } else {
     // if the ship has been hit, but the game isn't over
     if (game.ship.remove == true && game.ship.lives != 0) {
@@ -615,24 +621,26 @@ function main (game) {
       // if you destroy all the enemies
     } else if (game.enemies.length == 0) {
       game.youWin();
-      game.setTimeout(21000, game.resetGame);
+      game.loadReplayText();
       // if you lose all your lives
     } else if (game.ship.lives == 0) {
       game.gameOver();
-      game.setTimeout(6000, game.resetGame);
+      game.loadReplayText();
     } else {
       // update x and y position of sprites and draw
       game.run();
     }
   }
 
-  // if (game.ship.lives == 0 || game.enemies.length == 0) {
-  //   document.onkeydown = function (e) {
-  //     if (e.keyCode == 13) {
-  //       game.resetGame();
-  //     }
-  //   }
-  // }
+  if (game.ship.lives == 0 || game.enemies.length == 0) {
+    document.onkeydown = function (e) {
+      if (e.keyCode == 13) {
+        game.sfx.fanfare.pause();
+        game.sfx.fanfare.currentTime = 0;
+        game.resetGame();
+      }
+    }
+  }
   // Run main again on next animation frame
   game.requestID = requestAnimationFrame(function(){
     main(game);
